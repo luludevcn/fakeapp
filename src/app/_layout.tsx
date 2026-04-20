@@ -1,16 +1,32 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { MD3LightTheme, PaperProvider } from "react-native-paper";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+// 自定义主题
+const theme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: "#4CAF50",
+    secondary: "#2196F3",
+    accent: "#FF6B00",
+    error: "#F44336",
+    warning: "#FFC107",
+    info: "#00BCD4",
+    success: "#4CAF50",
+  },
+};
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <PaperProvider theme={theme}>
+      <StatusBar style="auto" />
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="user/_layout" options={{ headerShown: false }} />
+        <Stack.Screen name="driver/_layout" options={{ headerShown: false }} />
+        <Stack.Screen name="admin/_layout" options={{ headerShown: false }} />
+      </Stack>
+    </PaperProvider>
   );
 }
