@@ -36,7 +36,7 @@ export default function RootLayout() {
         )
       }} />
       <Tabs.Screen name="profile" options={{
-        title: '我的', tabBarIcon: ({ color, focused }) => (
+        title: '个人中心', tabBarIcon: ({ color, focused }) => (
           <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color}></Ionicons>
         )
       }} />
