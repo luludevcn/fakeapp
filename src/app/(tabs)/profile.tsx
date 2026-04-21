@@ -1,76 +1,84 @@
-import { useAppStore } from "@/store/useAppStore";
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Profile() {
   // 模拟用户数据
   const user = {
-    name: '司机师傅',
+    name: '张三',
+    phone: '15829383745',
     avatar: 'https://picsum.photos/100',
-    level: '普通会员',
-    balance: 1280.50
+    balance: 10384.80,
+    orderCount: 78,
   };
 
-  // 功能入口
-  const features = [
-    { id: '1', name: '新手指南', icon: 'person-add', color: '#FF6B00' },
-    { id: '2', name: '司机规则', icon: 'document-text', color: '#4CAF50' },
-    { id: '3', name: '司机关怀', icon: 'heart', color: '#F44336' },
-    { id: '4', name: '接单秘籍', icon: 'book', color: '#2196F3' },
-    { id: '5', name: '常用功能', icon: 'grid', color: '#9C27B0' },
-    { id: '6', name: '司机故事', icon: 'star', color: '#FF9800' },
-    { id: '7', name: '司机安全', icon: 'shield', color: '#00BCD4' },
-    { id: '8', name: '公示公告', icon: 'megaphone', color: '#795548' },
-    { id: '9', name: '调查问卷', icon: 'clipboard', color: '#607D8B' }
+  // 功能列表
+  const menuItems = [
+    { id: '1', name: '我的车辆', icon: 'car' },
+    { id: '2', name: '客服中心', icon: 'headset' },
+    { id: '3', name: '车主服务', icon: 'grid' },
+    { id: '4', name: '培训地址电话', icon: 'location' },
+    { id: '5', name: '关注微信', icon: 'logo-wechat' },
+    { id: '6', name: '客户收藏', icon: 'star' },
+    { id: '7', name: '法律条款及平台规则', icon: 'document-text' },
+    { id: '8', name: '个性化设置', icon: 'settings' }
   ];
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* 会员焕新计划横幅 */}
-      <View style={styles.memberBanner}>
-        <Image 
-          source={{ uri: 'https://picsum.photos/400/150' }} 
-          style={styles.bannerImage}
-          resizeMode="cover"
-        />
-        <View style={styles.bannerContent}>
-          <Text style={styles.bannerTitle}>会员焕新计划</Text>
-          <Text style={styles.bannerSubtitle}>3大卡种任您选，助力货运更高效</Text>
-          <TouchableOpacity style={styles.bannerButton}>
-            <Text style={styles.bannerButtonText}>点击查看</Text>
-          </TouchableOpacity>
+      {/* 用户信息区域 */}
+      <View style={styles.userSection}>
+        <Image source={{ uri: user.avatar }} style={styles.avatar} />
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userPhone}>{user.phone}</Text>
         </View>
-      </View>
-
-      {/* 功能分类标签 */}
-      <View style={styles.tabs}>
-        <TouchableOpacity style={styles.tabActive}>
-          <Text style={styles.tabActiveText}>消息通知</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tab}>
-          <Text style={styles.tabText}>司机学堂</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tab}>
-          <Text style={styles.tabText}>热门活动</Text>
+        <TouchableOpacity style={styles.arrow}>
+          <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
-      {/* 功能入口网格 */}
-      <View style={styles.featuresGrid}>
-        {features.map((feature) => (
-          <TouchableOpacity key={feature.id} style={styles.featureItem}>
-            <View style={[styles.featureIcon, { backgroundColor: feature.color + '20' }]}>
-              <Ionicons name={feature.icon as any} size={24} color={feature.color} />
-            </View>
-            <Text style={styles.featureText}>{feature.name}</Text>
-          </TouchableOpacity>
-        ))}
+      {/* 钱包和订单卡片 */}
+      <View style={styles.cardsSection}>
+        <TouchableOpacity style={styles.card}>
+          <View style={styles.cardContent}>
+            <Ionicons name="wallet" size={20} color="#FF6B00" />
+            <Text style={styles.cardTitle}>我的钱包 (元)</Text>
+            <Text style={styles.cardValue}>¥{user.balance.toFixed(2)}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#999999" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.card}>
+          <View style={styles.cardContent}>
+            <Ionicons name="document-text" size={20} color="#4CAF50" />
+            <Text style={styles.cardTitle}>我的订单</Text>
+            <Text style={styles.userPhone}>已完成{user.orderCount}个订单</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#999999" />
+        </TouchableOpacity>
       </View>
 
-      {/* 无更多数据提示 */}
-      <View style={styles.noMoreData}>
-        <Text style={styles.noMoreText}>无更多数据</Text>
+      {/* 专属助手 */}
+      <View style={styles.assistantSection}>
+        <Image source={{ uri: 'https://picsum.photos/50' }} style={styles.assistantAvatar} />
+        <View style={styles.assistantInfo}>
+          <Text style={styles.assistantTitle}>我是您的专属助手</Text>
+          <Text style={styles.assistantText}>很高兴为您服务，有问题随时联系我</Text>
+        </View>
+        <TouchableOpacity style={styles.contactButton}>
+          <Text style={styles.contactButtonText}>立即联系</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* 功能菜单列表 */}
+      {menuItems.map((item) => (
+        <TouchableOpacity key={item.id} style={styles.menuItem}>
+          <View style={styles.menuLeft}>
+            <Ionicons name={item.icon as any} size={20} color="#666666" />
+            <Text style={styles.menuText}>{item.name}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#999999" />
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 }
@@ -80,99 +88,114 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5F5",
   },
-  memberBanner: {
+  userSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C3E50',
+    padding: 20,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 16,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  userPhone: {
+    fontSize: 14,
+    color: '#E0E0E0',
+  },
+  arrow: {
+    padding: 8,
+  },
+  cardsSection: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
     margin: 16,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
   },
-  bannerImage: {
-    width: '100%',
-    height: 150,
-  },
-  bannerContent: {
+  card: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
+    borderRightWidth: 1,
+    borderRightColor: '#E5E5EA',
   },
-  bannerTitle: {
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 4,
+  },
+  cardValue: {
     fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    marginBottom: 1,
+  },
+  menuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuText: {
+    fontSize: 16,
+    color: '#333333',
+    marginLeft: 12,
+  },
+  assistantSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    marginVertical: 10,
+  },
+  assistantAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  assistantInfo: {
+    flex: 1,
+  },
+  assistantTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333333',
     marginBottom: 4,
   },
-  bannerSubtitle: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 12,
-  },
-  bannerButton: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  bannerButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  tabActive: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 6,
-    backgroundColor: '#FF6B00',
-  },
-  tabText: {
+  assistantText: {
     fontSize: 14,
     color: '#666666',
   },
-  tabActiveText: {
-    fontSize: 14,
+  contactButton: {
+    backgroundColor: '#FF6B00',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  contactButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 16,
-  },
-  featureItem: {
-    width: '25%',
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
-  featureIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  featureText: {
-    fontSize: 12,
-    color: '#333333',
-  },
-  noMoreData: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  noMoreText: {
     fontSize: 14,
-    color: '#999999',
+    fontWeight: 'bold',
   },
 });
