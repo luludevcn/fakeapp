@@ -1,16 +1,20 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Home() {
+  const router = useRouter();
   const { services } = useAppStore();
+
+
 
   // 顶部功能入口
   const topFeatures = [
-    { id: '1', name: '接单', icon: 'car' },
-    { id: '2', name: '投标', icon: 'gift' },
-    { id: '3', name: '奖励', icon: 'trophy' },
-    { id: '4', name: '接单码', icon: 'qr-code' }
+    { id: '1', name: '接单', icon: 'car', onPress: () => router.push('/order') },
+    { id: '2', name: '投标', icon: 'gift', onPress: () => console.log('投标') },
+    { id: '3', name: '奖励', icon: 'trophy', onPress: () => console.log('奖励') },
+    { id: '4', name: '接单码', icon: 'qr-code', onPress: () => console.log('接单码') }
   ];
 
   return (
@@ -18,7 +22,7 @@ export default function Home() {
       {/* 顶部功能入口 */}
       <View style={styles.topFeatures}>
         {topFeatures.map((feature) => (
-          <TouchableOpacity key={feature.id} style={styles.featureItem}>
+          <TouchableOpacity key={feature.id} style={styles.featureItem} onPress={feature.onPress}>
             <View style={styles.featureIcon}>
               <Ionicons name={feature.icon as any} size={28} color="#FFFFFF" />
             </View>
