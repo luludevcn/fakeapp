@@ -1,20 +1,36 @@
 import { useAppStore } from "@/store/useAppStore";
-import { useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Order() {
-  const { orders } = useAppStore();
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+  const { pendingOrders, myOrders, acceptOrder, getPendingOrders, getMyOrders, updateOrderStatus } = useAppStore();
+  const [activeTab, setActiveTab] = useState<'pending' | 'my'>('pending');
+
+  useEffect(() => {
+    // 加载待接单列表
+    getPendingOrders();
+    // 加载已接订单列表
+    getMyOrders();
+  }, []);
 
   const handleOrderPress = (order: any) => {
-    setSelectedOrder(order);
-    setModalVisible(true);
+    // 跳转到订单详情页面
+    router.push(`/order/${order.id}`);
   };
 
-  const handleCloseModal = () => {
-    setModalVisible(false);
+  const handleAcceptOrder = (orderId: string) => {
+    // 调用接单方法
+    acceptOrder(orderId);
+    // 显示接单成功提示
+    Alert.alert('接单成功', '订单已成功接取，祝您旅途愉快！');
+  };
+
+  const handleUpdateOrderStatus = (orderId: string, status: '已接单' | '配送中' | '已完成') => {
+    updateOrderStatus(orderId, status);
+    Alert.alert('操作成功', `订单状态已更新为${status}`);
   };
 
   return (
@@ -46,85 +62,123 @@ export default function Order() {
         </View>
       </View>
 
-      {/* 订单列表 */}
-      <View style={styles.ordersList}>
-        {orders.map((order) => (
-          <TouchableOpacity 
-            key={order.id} 
-            style={styles.orderItem}
-            onPress={() => handleOrderPress(order)}
-          >
-            <View style={styles.orderInfo}>
-              <View style={styles.locationRow}>
-                <Ionicons name="location" size={16} color="#4CAF50" />
-                <Text style={styles.locationText}>{order.from}</Text>
-              </View>
-              <View style={styles.locationRow}>
-                <Ionicons name="location" size={16} color="#F44336" />
-                <Text style={styles.locationText}>{order.to}</Text>
-              </View>
-              <View style={styles.priceRow}>
-                <Text style={styles.priceText}>¥{order.price.toFixed(2)}</Text>
-                {order.补贴 && (
-                  <View style={styles.subsidyTag}>
-                    <Text style={styles.subsidyText}>平台补贴{order.补贴}元</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-            <TouchableOpacity style={styles.acceptButton}>
-              <Text style={styles.acceptButtonText}>立即接单</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+      {/* 标签页切换 */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
+          onPress={() => setActiveTab('pending')}
+        >
+          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>待接单</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'my' && styles.activeTab]}
+          onPress={() => setActiveTab('my')}
+        >
+          <Text style={[styles.tabText, activeTab === 'my' && styles.activeTabText]}>我的订单</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* 订单详情弹窗 */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.modalClose} onPress={handleCloseModal}>
-              <Ionicons name="close" size={24} color="#333333" />
-            </TouchableOpacity>
-            {selectedOrder && (
-              <View>
-                <View style={styles.modalHeader}>
-                  <View style={styles.orderTypeTag}>
-                    <Text style={styles.orderTypeText}>{selectedOrder.type}</Text>
-                  </View>
-                  <Text style={styles.distanceText}>距您{selectedOrder.distance}</Text>
-                </View>
-                <View style={styles.modalLocation}>
+      {/* 订单列表 */}
+      <View style={styles.ordersList}>
+        {activeTab === 'pending' ? (
+          pendingOrders.length > 0 ? (
+            pendingOrders.map((order) => (
+              <TouchableOpacity 
+                key={order.id} 
+                style={styles.orderItem}
+                onPress={() => handleOrderPress(order)}
+              >
+                <View style={styles.orderInfo}>
                   <View style={styles.locationRow}>
                     <Ionicons name="location" size={16} color="#4CAF50" />
-                    <Text style={styles.locationText}>{selectedOrder.from}</Text>
+                    <Text style={styles.locationText}>{order.from}</Text>
                   </View>
                   <View style={styles.locationRow}>
                     <Ionicons name="location" size={16} color="#F44336" />
-                    <Text style={styles.locationText}>{selectedOrder.to}</Text>
+                    <Text style={styles.locationText}>{order.to}</Text>
+                  </View>
+                  <View style={styles.priceRow}>
+                    <Text style={styles.priceText}>¥{order.price.toFixed(2)}</Text>
+                    {order.补贴 && (
+                      <View style={styles.subsidyTag}>
+                        <Text style={styles.subsidyText}>平台补贴{order.补贴}元</Text>
+                      </View>
+                    )}
                   </View>
                 </View>
-                <View style={styles.modalPrice}>
-                  <Text style={styles.modalPriceText}>¥{selectedOrder.price.toFixed(2)}</Text>
-                  {selectedOrder.补贴 && (
-                    <View style={styles.subsidyTag}>
-                      <Text style={styles.subsidyText}>平台补贴{selectedOrder.补贴}元</Text>
+                <TouchableOpacity style={styles.acceptButton} onPress={() => handleAcceptOrder(order.id)}>
+                  <Text style={styles.acceptButtonText}>立即接单</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
+              <Text style={styles.emptyText}>暂无可用订单</Text>
+              <Text style={styles.emptySubtext}>请稍后再试</Text>
+            </View>
+          )
+        ) : (
+          myOrders.length > 0 ? (
+            myOrders.map((order) => (
+              <TouchableOpacity 
+                key={order.id} 
+                style={styles.orderItem}
+                onPress={() => handleOrderPress(order)}
+              >
+                <View style={styles.orderInfo}>
+                  <View style={styles.statusRow}>
+                    <View style={[styles.statusTag, order.status === '已接单' ? styles.statusPending : order.status === '配送中' ? styles.statusDelivering : styles.statusCompleted]}>
+                      <Text style={styles.statusText}>{order.status}</Text>
                     </View>
+                    <Text style={styles.distanceText}>距您{order.distance}</Text>
+                  </View>
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location" size={16} color="#4CAF50" />
+                    <Text style={styles.locationText}>{order.from}</Text>
+                  </View>
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location" size={16} color="#F44336" />
+                    <Text style={styles.locationText}>{order.to}</Text>
+                  </View>
+                  <View style={styles.priceRow}>
+                    <Text style={styles.priceText}>¥{order.price.toFixed(2)}</Text>
+                    {order.补贴 && (
+                      <View style={styles.subsidyTag}>
+                        <Text style={styles.subsidyText}>平台补贴{order.补贴}元</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.actionButtons}>
+                  {order.status === '已接单' && (
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleUpdateOrderStatus(order.id, '配送中')}
+                    >
+                      <Text style={styles.actionButtonText}>开始配送</Text>
+                    </TouchableOpacity>
+                  )}
+                  {order.status === '配送中' && (
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleUpdateOrderStatus(order.id, '已完成')}
+                    >
+                      <Text style={styles.actionButtonText}>完成订单</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
-                <TouchableOpacity style={styles.modalAcceptButton}>
-                  <Text style={styles.modalAcceptButtonText}>立即接单</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-      </Modal>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
+              <Text style={styles.emptyText}>暂无订单</Text>
+              <Text style={styles.emptySubtext}>您还没有接取任何订单</Text>
+            </View>
+          )
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -184,6 +238,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 8,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  activeTab: {
+    backgroundColor: '#FF6B00',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  activeTabText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   ordersList: {
     padding: 16,
   },
@@ -199,6 +278,30 @@ const styles = StyleSheet.create({
   orderInfo: {
     flex: 1,
     marginRight: 12,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusTag: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  statusPending: {
+    backgroundColor: '#FFF3E0',
+  },
+  statusDelivering: {
+    backgroundColor: '#E3F2FD',
+  },
+  statusCompleted: {
+    backgroundColor: '#E8F5E8',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   locationRow: {
     flexDirection: 'row',
@@ -242,67 +345,33 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  actionButtons: {
+    alignItems: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 20,
-    width: '90%',
-    maxWidth: 400,
-  },
-  modalClose: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  orderTypeTag: {
-    backgroundColor: '#E3F2FD',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  orderTypeText: {
-    fontSize: 12,
-    color: '#2196F3',
-  },
-  distanceText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  modalLocation: {
-    marginBottom: 16,
-  },
-  modalPrice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalPriceText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#F44336',
-  },
-  modalAcceptButton: {
+  actionButton: {
     backgroundColor: '#FF6B00',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
   },
-  modalAcceptButtonText: {
+  actionButtonText: {
     color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: 'bold',
-    fontSize: 16,
   },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666666',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999999',
+    marginTop: 8,
+  },
+
 });

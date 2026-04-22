@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Profile() {
+  const router = useRouter();
   // 模拟用户数据
   const user = {
     name: '张三',
@@ -39,7 +41,7 @@ export default function Profile() {
 
       {/* 钱包和订单卡片 */}
       <View style={styles.cardsSection}>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/wallet')}>
           <View style={styles.cardContent}>
             <Ionicons name="wallet" size={20} color="#FF6B00" />
             <Text style={styles.cardTitle}>我的钱包 (元)</Text>
@@ -71,7 +73,15 @@ export default function Profile() {
 
       {/* 功能菜单列表 */}
       {menuItems.map((item) => (
-        <TouchableOpacity key={item.id} style={styles.menuItem}>
+        <TouchableOpacity 
+          key={item.id} 
+          style={styles.menuItem}
+          onPress={() => {
+            if (item.id === '1') {
+              router.push('/vehicle');
+            }
+          }}
+        >
           <View style={styles.menuLeft}>
             <Ionicons name={item.icon as any} size={20} color="#666666" />
             <Text style={styles.menuText}>{item.name}</Text>
