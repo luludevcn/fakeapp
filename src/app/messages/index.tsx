@@ -3,6 +3,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Messages() {
   const router = useRouter();
@@ -95,7 +96,8 @@ export default function Messages() {
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
+      <SafeAreaView style={styles.header} edges={['top']}>
+        <View style={styles.headerContent}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
@@ -111,7 +113,8 @@ export default function Messages() {
             <Text style={styles.moreButtonText}>全部已读</Text>
           </TouchableOpacity>
         )}
-      </View>
+        </View>
+      </SafeAreaView>
 
       {/* 消息列表 */}
       <FlatList
@@ -136,14 +139,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   header: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
   },
   backButton: {
     padding: 8,

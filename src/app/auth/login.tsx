@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function Login() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function Login() {
     try {
       // 模拟API请求
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // 模拟登录成功
       const mockUser = {
         id: '1',
@@ -31,7 +31,7 @@ export default function Login() {
         level: '白银会员',
         balance: 10384.80,
       };
-      
+
       setUser(mockUser);
       Alert.alert('成功', isLogin ? '登录成功' : '注册成功');
       router.replace('/');
@@ -46,8 +46,8 @@ export default function Login() {
     <View style={styles.container}>
       {/* 顶部logo */}
       <View style={styles.header}>
-        <Image 
-          source={{ uri: 'https://picsum.photos/200/100' }} 
+        <Image
+          source={{ uri: 'https://picsum.photos/200/100' }}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -58,14 +58,14 @@ export default function Login() {
       <View style={styles.form}>
         {/* 切换按钮 */}
         <View style={styles.tabContainer}>
-          <TouchableOpacity 
-            style={[styles.tab, isLogin && styles.activeTab]} 
+          <TouchableOpacity
+            style={[styles.tab, isLogin && styles.activeTab]}
             onPress={() => setIsLogin(true)}
           >
             <Text style={[styles.tabText, isLogin && styles.activeTabText]}>登录</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tab, !isLogin && styles.activeTab]} 
+          <TouchableOpacity
+            style={[styles.tab, !isLogin && styles.activeTab]}
             onPress={() => setIsLogin(false)}
           >
             <Text style={[styles.tabText, !isLogin && styles.activeTabText]}>注册</Text>
@@ -99,7 +99,7 @@ export default function Login() {
         </View>
 
         {/* 登录/注册按钮 */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.submitButton, loading && styles.disabledButton]}
           onPress={handleSubmit}
           disabled={loading}

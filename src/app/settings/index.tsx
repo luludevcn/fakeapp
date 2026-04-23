@@ -1,8 +1,9 @@
-import { useRouter } from 'expo-router';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Settings() {
   const router = useRouter();
@@ -45,13 +46,15 @@ export default function Settings() {
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
+      <SafeAreaView style={styles.header} edges={['top']}>
+        <View style={styles.headerContent}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
         <Text style={styles.title}>设置</Text>
         <View style={styles.placeholder} />
-      </View>
+        </View>
+      </SafeAreaView>
 
       {/* 设置选项 */}
       <View style={styles.section}>

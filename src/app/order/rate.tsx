@@ -3,6 +3,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OrderRate() {
   const router = useRouter();
@@ -53,13 +54,15 @@ export default function OrderRate() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* 头部 */}
-      <View style={styles.header}>
+      <SafeAreaView style={styles.header} edges={['top']}>
+        <View style={styles.headerContent}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
         <Text style={styles.title}>评价订单</Text>
         <View style={styles.placeholder} />
-      </View>
+        </View>
+      </SafeAreaView>
 
       {/* 订单信息 */}
       <View style={styles.orderInfo}>
@@ -151,14 +154,16 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   header: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
   },
   backButton: {
     padding: 8,

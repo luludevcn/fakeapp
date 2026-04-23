@@ -1,10 +1,10 @@
-import { useRouter } from 'expo-router';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
-import React, { useEffect, useState, useRef } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View, Dimensions, Platform } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import { ExpoGaodeMapModule, MapView, Marker, Polyline } from 'expo-gaode-map';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -17,25 +17,41 @@ export default function Navigation() {
   const [location, setLocation] = useState(navigation.currentLocation);
   const [errorMsg, setErrorMsg] = useState('');
   const [isTracking, setIsTracking] = useState(false);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<React.ElementRef<typeof MapView>>(null);
 
   useEffect(() => {
     (async () => {
-      // 请求位置权限
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('位置权限被拒绝');
-        return;
-      }
+      try {
+        // 初始化高德地图隐私配置
+        const privacyStatus = ExpoGaodeMapModule.getPrivacyStatus();
+        if (!privacyStatus.isReady) {
+          ExpoGaodeMapModule.setPrivacyConfig({
+            hasShow: true,
+            hasContainsPrivacy: true,
+            hasAgree: true,
+            privacyVersion: '2026-04-23'
+          });
+        }
 
-      // 获取当前位置
-      const location = await Location.getCurrentPositionAsync({});
-      const newLocation = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      setLocation(newLocation);
-      setCurrentLocation(newLocation);
+        // 请求位置权限
+        const permissionStatus = await ExpoGaodeMapModule.requestLocationPermission();
+        if (permissionStatus !== 'granted') {
+          setErrorMsg('位置权限被拒绝');
+          return;
+        }
+
+        // 获取当前位置
+        const location = await ExpoGaodeMapModule.getCurrentLocation();
+        const newLocation = {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        };
+        setLocation(newLocation);
+        setCurrentLocation(newLocation);
+      } catch (error) {
+        console.error('获取位置失败:', error);
+        setErrorMsg('获取位置失败，请检查位置权限');
+      }
     })();
   }, []);
 
@@ -50,32 +66,31 @@ export default function Navigation() {
       setDestination(destination);
 
       // 开始实时定位
-      const subscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          distanceInterval: 10,
-          timeInterval: 1000,
-        },
-        (location) => {
-          const newLocation = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          };
-          setLocation(newLocation);
-          setCurrentLocation(newLocation);
+      ExpoGaodeMapModule.start();
+      
+      const subscription = ExpoGaodeMapModule.addLocationListener((location) => {
+        const newLocation = {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        };
+        setLocation(newLocation);
+        setCurrentLocation(newLocation);
 
-          // 移动地图视角到当前位置
-          if (mapRef.current) {
-            mapRef.current.animateToRegion({
-              ...newLocation,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            });
-          }
+        // 移动地图视角到当前位置
+        if (mapRef.current) {
+          mapRef.current.moveCamera({
+            target: {
+              latitude: newLocation.latitude,
+              longitude: newLocation.longitude,
+            }
+          });
         }
-      );
+      });
 
-      return () => subscription.remove();
+      return () => {
+        subscription.remove();
+        ExpoGaodeMapModule.stop();
+      };
     } catch (error) {
       Alert.alert('错误', '定位失败，请检查位置权限');
       setIsTracking(false);
@@ -94,7 +109,8 @@ export default function Navigation() {
   return (
     <View style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
+      <SafeAreaView style={styles.header} edges={['top']}>
+        <View style={styles.headerContent}>
         <TouchableOpacity onPress={handleNavigateBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
@@ -102,40 +118,33 @@ export default function Navigation() {
         <TouchableOpacity style={styles.moreButton}>
           <Ionicons name="ellipsis-vertical" size={24} color="#333333" />
         </TouchableOpacity>
-      </View>
+        </View>
+      </SafeAreaView>
 
       {/* 地图 */}
       <MapView
         ref={mapRef}
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         style={styles.map}
-        initialRegion={{
-          ...location,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
+        initialCameraPosition={{
+          target: location,
+          zoom: 16
         }}
+        myLocationEnabled
       >
-        {/* 当前位置标记 */}
-        <Marker
-          coordinate={location}
-          title="当前位置"
-          pinColor="#4CAF50"
-        />
-
         {/* 目的地标记 */}
         {navigation.destination && (
           <Marker
-            coordinate={navigation.destination}
+            position={navigation.destination}
             title="目的地"
-            pinColor="#F44336"
+            icon="https://api.map.baidu.com/lbsapi/createmap/images/poi-marker-red.png"
           />
         )}
 
         {/* 路线 */}
         {navigation.destination && (
           <Polyline
-            coordinates={[location, navigation.destination]}
-            strokeColor="#2196F3"
+            points={[location, navigation.destination]}
+            colors={['#2196F3']}
             strokeWidth={3}
           />
         )}
@@ -178,14 +187,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   header: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
   },
   backButton: {
     padding: 8,

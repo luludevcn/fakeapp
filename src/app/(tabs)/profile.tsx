@@ -9,7 +9,7 @@ export default function Profile() {
     name: '张三',
     phone: '15829383745',
     avatar: 'https://picsum.photos/100',
-    balance: 10384.80,
+    balance: 103884.80,
     orderCount: 78,
   };
 
@@ -73,8 +73,8 @@ export default function Profile() {
 
       {/* 功能菜单列表 */}
       {menuItems.map((item) => (
-        <TouchableOpacity 
-          key={item.id} 
+        <TouchableOpacity
+          key={item.id}
           style={styles.menuItem}
           onPress={() => {
             if (item.id === '1') {

@@ -1,25 +1,49 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Ionicons } from "@expo/vector-icons";
-import * as Location from 'expo-location';
+import { ExpoGaodeMapModule, MapView, Marker } from 'expo-gaode-map';
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const { width, height } = Dimensions.get('window');
-const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.05;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+interface LocationState {
+  latitude: number;
+  longitude: number;
+}
 
-export default function Order() {
+interface Order {
+  id: string;
+  from: string;
+  to: string;
+  price: number;
+  fromLat?: number;
+  fromLng?: number;
+  toLat?: number;
+  toLng?: number;
+  补贴?: number;
+  status?: string;
+}
+
+
+function OrderComponent() {
   const router = useRouter();
   const { pendingOrders, myOrders, acceptOrder, getPendingOrders, getMyOrders, updateOrderStatus } = useAppStore();
   const [activeTab, setActiveTab] = useState<'pending' | 'my'>('pending');
-  const [location, setLocation] = useState({ latitude: 39.9042, longitude: 116.4074 });
-  const [errorMsg, setErrorMsg] = useState('');
-  const mapRef = useRef<MapView>(null);
+  const [location, setLocation] = useState<LocationState>({ latitude: 39.9042, longitude: 116.4074 });
+  const [errorMsg, setErrorMsg] = useState<string>('');
+  const mapRef = useRef<React.ElementRef<typeof MapView>>(null);
 
   useEffect(() => {
+    // 初始化高德地图隐私配置
+    const privacyStatus = ExpoGaodeMapModule.getPrivacyStatus();
+    if (!privacyStatus.isReady) {
+      ExpoGaodeMapModule.setPrivacyConfig({
+        hasShow: true,
+        hasContainsPrivacy: true,
+        hasAgree: true,
+        privacyVersion: '2026-04-23'
+      });
+    }
+
     // 加载待接单列表
     getPendingOrders();
     // 加载已接订单列表
@@ -27,43 +51,56 @@ export default function Order() {
 
     // 获取当前位置
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('位置权限被拒绝');
-        return;
-      }
+      try {
+        const permissionStatus = await ExpoGaodeMapModule.requestLocationPermission();
+        if ((permissionStatus as any) !== 'granted' && (permissionStatus as any) !== 1) {
+          setErrorMsg('位置权限被拒绝');
+          return;
+        }
 
-      const locationData = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: locationData.coords.latitude,
-        longitude: locationData.coords.longitude,
-      });
+        const locationData = await ExpoGaodeMapModule.getCurrentLocation();
+        setLocation({
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+        });
+      } catch (error) {
+        console.error('获取位置失败:', error);
+        setErrorMsg('获取位置失败，请检查位置权限');
+      }
     })();
   }, []);
 
-  const handleOrderPress = (order: any) => {
+  const handleOrderPress = useCallback((order: Order) => {
     // 跳转到订单详情页面
     router.push(`/order/${order.id}`);
-  };
+  }, [router]);
 
-  const handleAcceptOrder = (orderId: string) => {
+  const handleAcceptOrder = useCallback((orderId: string) => {
     // 调用接单方法
     acceptOrder(orderId);
     // 显示接单成功提示
     Alert.alert('接单成功', '订单已成功接取，祝您旅途愉快！');
-  };
+  }, [acceptOrder]);
 
-  const handleUpdateOrderStatus = (orderId: string, status: '已接单' | '配送中' | '已完成') => {
+  const handleUpdateOrderStatus = useCallback((orderId: string, status: '已接单' | '配送中' | '已完成') => {
     updateOrderStatus(orderId, status);
     Alert.alert('操作成功', `订单状态已更新为${status}`);
-  };
+  }, [updateOrderStatus]);
+
+  const displayOrders = useMemo(() => {
+    return activeTab === 'pending' ? pendingOrders : myOrders;
+  }, [activeTab, pendingOrders, myOrders]);
+
+  const displayedPendingOrders = useMemo(() => {
+    return pendingOrders.slice(0, 3);
+  }, [pendingOrders]);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* 顶部横幅 */}
       <View style={styles.banner}>
-        <Image 
-          source={{ uri: 'https://picsum.photos/400/200' }} 
+        <Image
+          source={{ uri: 'https://picsum.photos/400/200' }}
           style={styles.bannerImage}
           resizeMode="cover"
         />
@@ -91,62 +128,54 @@ export default function Order() {
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}
-          provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
           style={styles.map}
-          initialRegion={{
-            ...location,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
+          initialCameraPosition={{
+            target: location,
+            zoom: 13
           }}
+          myLocationEnabled
         >
-          {/* 当前位置标记 */}
-          <Marker
-            coordinate={location}
-            title="我的位置"
-            pinColor="#4CAF50"
-          />
-
           {/* 订单起点标记 */}
-          {pendingOrders.slice(0, 3).map((order) => (
+          {displayedPendingOrders.map((order) => (
             <Marker
               key={`from-${order.id}`}
-              coordinate={{
+              position={{
                 latitude: order.fromLat || location.latitude + Math.random() * 0.02,
                 longitude: order.fromLng || location.longitude + Math.random() * 0.02,
               }}
               title={order.from}
-              pinColor="#4CAF50"
+              icon="https://api.map.baidu.com/lbsapi/createmap/images/poi-marker-green.png"
             />
           ))}
 
           {/* 订单终点标记 */}
-          {pendingOrders.slice(0, 3).map((order) => (
+          {displayedPendingOrders.map((order) => (
             <Marker
               key={`to-${order.id}`}
-              coordinate={{
+              position={{
                 latitude: order.toLat || location.latitude + Math.random() * 0.02 + 0.01,
                 longitude: order.toLng || location.longitude + Math.random() * 0.02 + 0.01,
               }}
               title={order.to}
-              pinColor="#F44336"
+              icon="https://api.map.baidu.com/lbsapi/createmap/images/poi-marker-red.png"
             />
           ))}
         </MapView>
         <View style={styles.mapOverlay}>
           <Text style={styles.mapOverlayText}>附近订单</Text>
-          <Text style={styles.mapOverlaySubtext}>{pendingOrders.length} 个待接订单</Text>
+          <Text style={styles.mapOverlaySubtext}>{displayedPendingOrders.length} 个待接订单</Text>
         </View>
       </View>
 
       {/* 标签页切换 */}
       <View style={styles.tabContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
           onPress={() => setActiveTab('pending')}
         >
           <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>待接单</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.tab, activeTab === 'my' && styles.activeTab]}
           onPress={() => setActiveTab('my')}
         >
@@ -157,10 +186,10 @@ export default function Order() {
       {/* 订单列表 */}
       <View style={styles.ordersList}>
         {activeTab === 'pending' ? (
-          pendingOrders.length > 0 ? (
-            pendingOrders.map((order) => (
-              <TouchableOpacity 
-                key={order.id} 
+          displayOrders.length > 0 ? (
+            displayOrders.map((order) => (
+              <TouchableOpacity
+                key={order.id}
                 style={styles.orderItem}
                 onPress={() => handleOrderPress(order)}
               >
@@ -195,10 +224,10 @@ export default function Order() {
             </View>
           )
         ) : (
-          myOrders.length > 0 ? (
-            myOrders.map((order) => (
-              <TouchableOpacity 
-                key={order.id} 
+          displayOrders.length > 0 ? (
+            displayOrders.map((order) => (
+              <TouchableOpacity
+                key={order.id}
                 style={styles.orderItem}
                 onPress={() => handleOrderPress(order)}
               >
@@ -228,7 +257,7 @@ export default function Order() {
                 </View>
                 <View style={styles.actionButtons}>
                   {order.status === '已接单' && (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.actionButton}
                       onPress={() => handleUpdateOrderStatus(order.id, '配送中')}
                     >
@@ -236,7 +265,7 @@ export default function Order() {
                     </TouchableOpacity>
                   )}
                   {order.status === '配送中' && (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.actionButton}
                       onPress={() => handleUpdateOrderStatus(order.id, '已完成')}
                     >
@@ -488,5 +517,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-
 });
+
+export default React.memo(OrderComponent);

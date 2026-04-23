@@ -1,15 +1,11 @@
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
+import { ExpoGaodeMapModule, MapView, Marker, Polyline } from 'expo-gaode-map';
+import { PermissionStatus } from 'expo-modules-core';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Dimensions, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
-
-const { width, height } = Dimensions.get('window');
-const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.08;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OrderDetail() {
   const router = useRouter();
@@ -17,30 +13,47 @@ export default function OrderDetail() {
   const { orders, acceptOrder, updateOrderStatus, cancelOrder } = useAppStore();
   const [order, setOrder] = useState<any>(null);
   const [location, setLocation] = useState({ latitude: 39.9042, longitude: 116.4074 });
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<React.ElementRef<typeof MapView>>(null);
 
   useEffect(() => {
-    // 查找订单
-    const foundOrder = orders.find(o => o.id === id);
-    if (foundOrder) {
-      setOrder(foundOrder);
-    } else {
-      Alert.alert('错误', '订单不存在');
-      router.back();
-    }
-
-    // 获取当前位置
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        return;
-      }
+      try {
+        // 初始化高德地图隐私配置
+        const privacyStatus = ExpoGaodeMapModule.getPrivacyStatus();
+        if (!privacyStatus.isReady) {
+          ExpoGaodeMapModule.setPrivacyConfig({
+            hasShow: true,
+            hasContainsPrivacy: true,
+            hasAgree: true,
+            privacyVersion: '2026-04-23'
+          });
+        }
 
-      const locationData = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: locationData.coords.latitude,
-        longitude: locationData.coords.longitude,
-      });
+        // 查找订单
+        const foundOrder = orders.find(o => o.id === id);
+        if (foundOrder) {
+          setOrder(foundOrder);
+        } else {
+          Alert.alert('错误', '订单不存在');
+          router.back();
+          return;
+        }
+
+        // 请求位置权限
+        const permissionStatus = await ExpoGaodeMapModule.requestLocationPermission();
+        if (permissionStatus !== PermissionStatus.GRANTED) {
+          return;
+        }
+
+        // 获取当前位置
+        const locationData = await ExpoGaodeMapModule.getCurrentLocation();
+        setLocation({
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+        });
+      } catch (error) {
+        console.error('获取位置失败:', error);
+      }
     })();
   }, [id, orders]);
 
@@ -110,13 +123,15 @@ export default function OrderDetail() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>订单详情</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <SafeAreaView style={styles.header} edges={['top']}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>订单详情</Text>
+          <View style={styles.placeholder} />
+        </View>
+      </SafeAreaView>
 
       {/* 订单状态 */}
       <View style={[styles.statusCard, order.status === '待接单' ? styles.statusPending : order.status === '配送中' ? styles.statusDelivering : styles.statusCompleted]}>
@@ -151,45 +166,39 @@ export default function OrderDetail() {
         <View style={styles.mapContainer}>
           <MapView
             ref={mapRef}
-            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
             style={styles.map}
-            initialRegion={{
-              latitude: (order.fromLat || location.latitude + 0.01),
-              longitude: (order.fromLng || location.longitude + 0.01),
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
+            initialCameraPosition={{
+              target: {
+                latitude: (order.fromLat || location.latitude + 0.01),
+                longitude: (order.fromLng || location.longitude + 0.01),
+              },
+              zoom: 14
             }}
+            myLocationEnabled
           >
-            {/* 当前位置标记 */}
-            <Marker
-              coordinate={location}
-              title="我的位置"
-              pinColor="#4CAF50"
-            />
-
             {/* 起点标记 */}
             <Marker
-              coordinate={{
+              position={{
                 latitude: order.fromLat || location.latitude + 0.02,
                 longitude: order.fromLng || location.longitude + 0.02,
               }}
               title={order.from}
-              pinColor="#4CAF50"
+              icon="https://api.map.baidu.com/lbsapi/createmap/images/poi-marker-green.png"
             />
 
             {/* 终点标记 */}
             <Marker
-              coordinate={{
+              position={{
                 latitude: order.toLat || location.latitude + 0.04,
                 longitude: order.toLng || location.longitude + 0.04,
               }}
               title={order.to}
-              pinColor="#F44336"
+              icon="https://api.map.baidu.com/lbsapi/createmap/images/poi-marker-red.png"
             />
 
             {/* 路线 */}
             <Polyline
-              coordinates={[
+              points={[
                 {
                   latitude: order.fromLat || location.latitude + 0.02,
                   longitude: order.fromLng || location.longitude + 0.02,
@@ -199,8 +208,8 @@ export default function OrderDetail() {
                   longitude: order.toLng || location.longitude + 0.04,
                 },
               ]}
-              strokeColor="#2196F3"
-              strokeWidth={3}
+              colors={['#4ff321ff']} // 线条颜色
+              strokeWidth={5}
             />
           </MapView>
         </View>
@@ -251,7 +260,7 @@ export default function OrderDetail() {
       {/* 操作按钮 */}
       <View style={styles.actionContainer}>
         {order.status === '待接单' && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => handleAcceptOrder()}
           >
@@ -259,7 +268,7 @@ export default function OrderDetail() {
           </TouchableOpacity>
         )}
         {order.status === '已接单' && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => handleUpdateOrderStatus('配送中')}
           >
@@ -268,14 +277,14 @@ export default function OrderDetail() {
         )}
         {order.status === '配送中' && (
           <View style={styles.buttonRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.primaryButton, styles.navButton]}
               onPress={() => router.push('/navigation')}
             >
               <Ionicons name="navigate" size={20} color="#FFFFFF" />
               <Text style={styles.navButtonText}>开始导航</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.primaryButton, styles.completeButton]}
               onPress={() => handleUpdateOrderStatus('已完成')}
             >
@@ -284,7 +293,7 @@ export default function OrderDetail() {
           </View>
         )}
         {order.status === '已完成' && !order.rating && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => router.push(`/order/rate?id=${order.id}`)}
           >
@@ -339,14 +348,16 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   header: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
   },
   backButton: {
     padding: 8,
