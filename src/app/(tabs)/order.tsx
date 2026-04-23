@@ -1,19 +1,44 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Ionicons } from "@expo/vector-icons";
+import * as Location from 'expo-location';
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
+const { width, height } = Dimensions.get('window');
+const ASPECT_RATIO = width / height;
+const LATITUDE_DELTA = 0.05;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default function Order() {
   const router = useRouter();
   const { pendingOrders, myOrders, acceptOrder, getPendingOrders, getMyOrders, updateOrderStatus } = useAppStore();
   const [activeTab, setActiveTab] = useState<'pending' | 'my'>('pending');
+  const [location, setLocation] = useState({ latitude: 39.9042, longitude: 116.4074 });
+  const [errorMsg, setErrorMsg] = useState('');
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     // 加载待接单列表
     getPendingOrders();
     // 加载已接订单列表
     getMyOrders();
+
+    // 获取当前位置
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('位置权限被拒绝');
+        return;
+      }
+
+      const locationData = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: locationData.coords.latitude,
+        longitude: locationData.coords.longitude,
+      });
+    })();
   }, []);
 
   const handleOrderPress = (order: any) => {
@@ -59,6 +84,57 @@ export default function Order() {
           <TouchableOpacity style={styles.joinButton}>
             <Text style={styles.joinButtonText}>立即加盟</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* 地图区域 */}
+      <View style={styles.mapContainer}>
+        <MapView
+          ref={mapRef}
+          provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+          style={styles.map}
+          initialRegion={{
+            ...location,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA,
+          }}
+        >
+          {/* 当前位置标记 */}
+          <Marker
+            coordinate={location}
+            title="我的位置"
+            pinColor="#4CAF50"
+          />
+
+          {/* 订单起点标记 */}
+          {pendingOrders.slice(0, 3).map((order) => (
+            <Marker
+              key={`from-${order.id}`}
+              coordinate={{
+                latitude: order.fromLat || location.latitude + Math.random() * 0.02,
+                longitude: order.fromLng || location.longitude + Math.random() * 0.02,
+              }}
+              title={order.from}
+              pinColor="#4CAF50"
+            />
+          ))}
+
+          {/* 订单终点标记 */}
+          {pendingOrders.slice(0, 3).map((order) => (
+            <Marker
+              key={`to-${order.id}`}
+              coordinate={{
+                latitude: order.toLat || location.latitude + Math.random() * 0.02 + 0.01,
+                longitude: order.toLng || location.longitude + Math.random() * 0.02 + 0.01,
+              }}
+              title={order.to}
+              pinColor="#F44336"
+            />
+          ))}
+        </MapView>
+        <View style={styles.mapOverlay}>
+          <Text style={styles.mapOverlayText}>附近订单</Text>
+          <Text style={styles.mapOverlaySubtext}>{pendingOrders.length} 个待接订单</Text>
         </View>
       </View>
 
@@ -275,6 +351,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  distanceText: {
+    fontSize: 12,
+    color: '#999999',
+  },
+  orderItemActive: {
+    backgroundColor: '#FF6B00',
+  },
+  orderItemActiveText: {
+    color: '#FFFFFF',
+  },
   orderInfo: {
     flex: 1,
     marginRight: 12,
@@ -372,6 +458,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999999',
     marginTop: 8,
+  },
+  mapContainer: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+    height: 200,
+  },
+  map: {
+    flex: 1,
+  },
+  mapOverlay: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+  },
+  mapOverlayText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  mapOverlaySubtext: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    marginTop: 2,
   },
 
 });

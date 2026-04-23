@@ -4,10 +4,14 @@ interface Order {
   id: string;
   from: string;
   to: string;
+  fromLat?: number;
+  fromLng?: number;
+  toLat?: number;
+  toLng?: number;
   price: number;
   distance: string;
   type: '实时' | '预约';
- 补贴?: number;
+  补贴?: number;
   status: '待接单' | '已接单' | '配送中' | '已完成' | '已取消';
   rating?: number;
   comment?: string;
@@ -81,6 +85,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'o1',
       from: '东小口森林公园 (东门)(北京市昌平区)',
       to: '大兴区安定镇后安定 (大兴北京市大...)',
+      fromLat: 39.9968,
+      fromLng: 116.4261,
+      toLat: 39.7392,
+      toLng: 116.3743,
       price: 328.85,
       distance: '10公里',
       type: '实时',
@@ -90,6 +98,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'o2',
       from: '聚发大串 (北七家镇燕丹村 86号)',
       to: '潞苑东路 (通州区)',
+      fromLat: 40.0324,
+      fromLng: 116.4297,
+      toLat: 39.9968,
+      toLng: 116.6426,
       price: 74.40,
       distance: '4公里',
       type: '实时',
@@ -100,6 +112,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'o3',
       from: '东小口森林公园 (东门)(北京市昌平区)',
       to: '大兴区安定镇后安定 (大兴北京市大...)',
+      fromLat: 39.9968,
+      fromLng: 116.4261,
+      toLat: 39.7392,
+      toLng: 116.3743,
       price: 328.85,
       distance: '10公里',
       type: '预约',
@@ -109,6 +125,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'o4',
       from: '聚发大串 (北七家镇燕丹村 86号)',
       to: '潞苑东路 (通州区)',
+      fromLat: 40.0324,
+      fromLng: 116.4297,
+      toLat: 39.9968,
+      toLng: 116.6426,
       price: 74.40,
       distance: '4公里',
       type: '预约',
@@ -121,6 +141,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'po1',
       from: '东小口森林公园 (东门)(北京市昌平区)',
       to: '大兴区安定镇后安定 (大兴北京市大...)',
+      fromLat: 39.9968,
+      fromLng: 116.4261,
+      toLat: 39.7392,
+      toLng: 116.3743,
       price: 328.85,
       distance: '10公里',
       type: '实时',
@@ -130,6 +154,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'po2',
       from: '聚发大串 (北七家镇燕丹村 86号)',
       to: '潞苑东路 (通州区)',
+      fromLat: 40.0324,
+      fromLng: 116.4297,
+      toLat: 39.9968,
+      toLng: 116.6426,
       price: 74.40,
       distance: '4公里',
       type: '实时',
@@ -140,6 +168,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'po3',
       from: '东小口森林公园 (东门)(北京市昌平区)',
       to: '大兴区安定镇后安定 (大兴北京市大...)',
+      fromLat: 39.9968,
+      fromLng: 116.4261,
+      toLat: 39.7392,
+      toLng: 116.3743,
       price: 328.85,
       distance: '10公里',
       type: '预约',
@@ -149,6 +181,10 @@ export const useAppStore = create<AppState>((set) => ({
       id: 'po4',
       from: '聚发大串 (北七家镇燕丹村 86号)',
       to: '潞苑东路 (通州区)',
+      fromLat: 40.0324,
+      fromLng: 116.4297,
+      toLat: 39.9968,
+      toLng: 116.6426,
       price: 74.40,
       distance: '4公里',
       type: '预约',

@@ -1,14 +1,23 @@
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Dimensions, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+
+const { width, height } = Dimensions.get('window');
+const ASPECT_RATIO = width / height;
+const LATITUDE_DELTA = 0.08;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default function OrderDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { orders, updateOrderStatus, cancelOrder } = useAppStore();
+  const { orders, acceptOrder, updateOrderStatus, cancelOrder } = useAppStore();
   const [order, setOrder] = useState<any>(null);
+  const [location, setLocation] = useState({ latitude: 39.9042, longitude: 116.4074 });
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     // 查找订单
@@ -19,7 +28,33 @@ export default function OrderDetail() {
       Alert.alert('错误', '订单不存在');
       router.back();
     }
+
+    // 获取当前位置
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+
+      const locationData = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: locationData.coords.latitude,
+        longitude: locationData.coords.longitude,
+      });
+    })();
   }, [id, orders]);
+
+  const handleAcceptOrder = () => {
+    if (order) {
+      acceptOrder(order.id);
+      Alert.alert('成功', '订单已成功接取，祝您旅途愉快！');
+      // 刷新订单数据
+      const updatedOrder = orders.find(o => o.id === id);
+      if (updatedOrder) {
+        setOrder(updatedOrder);
+      }
+    }
+  };
 
   const handleUpdateOrderStatus = (status: '已接单' | '配送中' | '已完成') => {
     if (order) {
@@ -114,11 +149,60 @@ export default function OrderDetail() {
       <View style={styles.mapCard}>
         <Text style={styles.mapTitle}>行驶路线</Text>
         <View style={styles.mapContainer}>
-          <Image 
-            source={{ uri: `https://maps.googleapis.com/maps/api/staticmap?size=400x200&path=color:0x0000ff|weight:5|${order.from.replace(/\s+/g, '+')}|${order.to.replace(/\s+/g, '+')}&key=YOUR_API_KEY` }} 
-            style={styles.mapImage}
-            resizeMode="cover"
-          />
+          <MapView
+            ref={mapRef}
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+            style={styles.map}
+            initialRegion={{
+              latitude: (order.fromLat || location.latitude + 0.01),
+              longitude: (order.fromLng || location.longitude + 0.01),
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            }}
+          >
+            {/* 当前位置标记 */}
+            <Marker
+              coordinate={location}
+              title="我的位置"
+              pinColor="#4CAF50"
+            />
+
+            {/* 起点标记 */}
+            <Marker
+              coordinate={{
+                latitude: order.fromLat || location.latitude + 0.02,
+                longitude: order.fromLng || location.longitude + 0.02,
+              }}
+              title={order.from}
+              pinColor="#4CAF50"
+            />
+
+            {/* 终点标记 */}
+            <Marker
+              coordinate={{
+                latitude: order.toLat || location.latitude + 0.04,
+                longitude: order.toLng || location.longitude + 0.04,
+              }}
+              title={order.to}
+              pinColor="#F44336"
+            />
+
+            {/* 路线 */}
+            <Polyline
+              coordinates={[
+                {
+                  latitude: order.fromLat || location.latitude + 0.02,
+                  longitude: order.fromLng || location.longitude + 0.02,
+                },
+                {
+                  latitude: order.toLat || location.latitude + 0.04,
+                  longitude: order.toLng || location.longitude + 0.04,
+                },
+              ]}
+              strokeColor="#2196F3"
+              strokeWidth={3}
+            />
+          </MapView>
         </View>
       </View>
 
@@ -167,7 +251,10 @@ export default function OrderDetail() {
       {/* 操作按钮 */}
       <View style={styles.actionContainer}>
         {order.status === '待接单' && (
-          <TouchableOpacity style={styles.primaryButton}>
+          <TouchableOpacity 
+            style={styles.primaryButton}
+            onPress={() => handleAcceptOrder()}
+          >
             <Text style={styles.primaryButtonText}>立即接单</Text>
           </TouchableOpacity>
         )}
@@ -334,9 +421,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
   },
-  mapImage: {
-    width: '100%',
-    height: '100%',
+  map: {
+    flex: 1,
   },
   addressCard: {
     backgroundColor: '#FFFFFF',
