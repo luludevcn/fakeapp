@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface Vehicle {
   id: string;
@@ -51,45 +50,51 @@ export default function Vehicle() {
     router.push('/vehicle/add');
   };
 
+  const getStatusStyle = (status: string) => {
+    switch(status) {
+      case '正常': return 'bg-green-50';
+      case '审核中': return 'bg-orange-50';
+      default: return 'bg-gray-100';
+    }
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>我的车辆</Text>
-        <TouchableOpacity onPress={handleAddVehicle} style={styles.addButton}>
+        <Text className="text-lg font-bold text-gray-800">我的车辆</Text>
+        <TouchableOpacity className="p-2" onPress={handleAddVehicle}>
           <Ionicons name="add" size={24} color="#FF6B00" />
         </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      </View>
 
-      <View style={styles.content}>
+      <View className="p-4">
         {vehicles.map((vehicle) => (
-          <View key={vehicle.id} style={styles.vehicleCard}>
-            <View style={styles.vehicleHeader}>
-              <View style={styles.vehicleInfo}>
-                <Text style={styles.plateNumber}>{vehicle.plateNumber}</Text>
-                <Text style={styles.vehicleType}>{vehicle.brand} {vehicle.model} | {vehicle.type}</Text>
+          <View key={vehicle.id} className="bg-white rounded-lg p-4 mb-4 shadow">
+            <View className="flex-row justify-between items-start mb-3">
+              <View>
+                <Text className="text-lg font-bold text-gray-800 mb-1">{vehicle.plateNumber}</Text>
+                <Text className="text-sm text-gray-600">{vehicle.brand} {vehicle.model} | {vehicle.type}</Text>
               </View>
               {vehicle.isDefault && (
-                <View style={styles.defaultTag}>
-                  <Text style={styles.defaultText}>默认</Text>
+                <View className="bg-orange-500 py-1 px-2 rounded">
+                  <Text className="text-xs text-white font-bold">默认</Text>
                 </View>
               )}
             </View>
             
-            <View style={styles.vehicleFooter}>
-              <View style={[styles.statusTag, vehicle.status === '正常' ? styles.statusNormal : vehicle.status === '审核中' ? styles.statusPending : styles.statusDisabled]}>
-                <Text style={styles.statusText}>{vehicle.status}</Text>
+            <View className="flex-row justify-between items-center">
+              <View className={`py-1 px-2 rounded ${getStatusStyle(vehicle.status)}`}>
+                <Text className="text-xs font-bold text-gray-700">{vehicle.status}</Text>
               </View>
               <TouchableOpacity 
-                style={[styles.setDefaultButton, vehicle.isDefault && styles.disabledButton]}
+                className={`border py-1.5 px-3 rounded-full ${vehicle.isDefault ? 'border-gray-300' : 'border-orange-500'}`}
                 onPress={() => handleSetDefault(vehicle.id)}
                 disabled={vehicle.isDefault}
               >
-                <Text style={[styles.setDefaultText, vehicle.isDefault && styles.disabledText]}>
+                <Text className={`text-xs font-bold ${vehicle.isDefault ? 'text-gray-400' : 'text-orange-500'}`}>
                   {vehicle.isDefault ? '已设为默认' : '设为默认'}
                 </Text>
               </TouchableOpacity>
@@ -97,143 +102,11 @@ export default function Vehicle() {
           </View>
         ))}
 
-        <TouchableOpacity style={styles.addCard} onPress={handleAddVehicle}>
+        <TouchableOpacity className="bg-white rounded-lg p-10 items-center border border-gray-200 border-dashed" onPress={handleAddVehicle}>
           <Ionicons name="add-circle" size={48} color="#FF6B00" />
-          <Text style={styles.addText}>添加车辆</Text>
+          <Text className="text-base text-orange-500 mt-2">添加车辆</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  addButton: {
-    padding: 8,
-  },
-  content: {
-    padding: 16,
-  },
-  vehicleCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  vehicleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  vehicleInfo: {
-    flex: 1,
-  },
-  plateNumber: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 4,
-  },
-  vehicleType: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  defaultTag: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  defaultText: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  vehicleFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusTag: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  statusNormal: {
-    backgroundColor: '#E8F5E8',
-  },
-  statusPending: {
-    backgroundColor: '#FFF3E0',
-  },
-  statusDisabled: {
-    backgroundColor: '#EEEEEE',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  setDefaultButton: {
-    borderWidth: 1,
-    borderColor: '#FF6B00',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  disabledButton: {
-    borderColor: '#CCCCCC',
-  },
-  setDefaultText: {
-    fontSize: 12,
-    color: '#FF6B00',
-    fontWeight: 'bold',
-  },
-  disabledText: {
-    color: '#999999',
-  },
-  addCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 40,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderStyle: 'dashed',
-  },
-  addText: {
-    fontSize: 16,
-    color: '#FF6B00',
-    marginTop: 8,
-  },
-});

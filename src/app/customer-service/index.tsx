@@ -1,8 +1,7 @@
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect, useRef } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface Message {
   id: string;
@@ -18,7 +17,6 @@ export default function CustomerService() {
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    // 初始化消息列表，添加欢迎消息
     const initialMessages: Message[] = [
       {
         id: '1',
@@ -33,7 +31,6 @@ export default function CustomerService() {
   const handleSend = () => {
     if (!inputText.trim()) return;
 
-    // 添加用户消息
     const newUserMessage: Message = {
       id: Date.now().toString(),
       text: inputText.trim(),
@@ -44,7 +41,6 @@ export default function CustomerService() {
     setMessages(prev => [...prev, newUserMessage]);
     setInputText('');
 
-    // 模拟客服回复
     setTimeout(() => {
       const replyMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -73,13 +69,13 @@ export default function CustomerService() {
 
   const renderMessage = ({ item }: { item: Message }) => {
     return (
-      <View style={[styles.messageContainer, item.sender === 'user' ? styles.userMessageContainer : styles.systemMessageContainer]}>
-        <View style={[styles.messageBubble, item.sender === 'user' ? styles.userMessageBubble : styles.systemMessageBubble]}>
-          <Text style={[styles.messageText, item.sender === 'user' ? styles.userMessageText : styles.systemMessageText]}>
+      <View className={`mb-4 max-w-[80%] ${item.sender === 'user' ? 'self-end' : 'self-start'}`}>
+        <View className={`px-3 py-2.5 rounded-2xl ${item.sender === 'user' ? 'bg-green-500 rounded-br-sm' : 'bg-white rounded-bl-sm border border-gray-200'}`}>
+          <Text className={`text-sm leading-relaxed ${item.sender === 'user' ? 'text-white' : 'text-gray-800'}`}>
             {item.text}
           </Text>
         </View>
-        <Text style={styles.timestamp}>
+        <Text className="text-xs text-gray-400 mt-1 self-end">
           {item.timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
         </Text>
       </View>
@@ -88,21 +84,19 @@ export default function CustomerService() {
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container}
+      className="flex-1 bg-gray-100"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* 头部 */}
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>客服中心</Text>
-        <TouchableOpacity style={styles.moreButton}>
+        <Text className="text-lg font-bold text-gray-800">客服中心</Text>
+        <TouchableOpacity className="p-2">
           <Ionicons name="ellipsis-vertical" size={24} color="#333333" />
         </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      </View>
 
       {/* 消息列表 */}
       <FlatList
@@ -110,15 +104,15 @@ export default function CustomerService() {
         data={messages}
         renderItem={renderMessage}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.messagesList}
+        contentContainerStyle={{ padding: 16 }}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
       />
 
       {/* 输入区域 */}
-      <View style={styles.inputContainer}>
+      <View className="flex-row items-end bg-white px-3 py-3 border-t border-gray-200">
         <TextInput
-          style={styles.input}
+          className="flex-1 min-h-[40px] max-h-[100px] px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-800"
           placeholder="请输入您的问题..."
           placeholderTextColor="#999999"
           value={inputText}
@@ -127,7 +121,7 @@ export default function CustomerService() {
           maxLength={500}
         />
         <TouchableOpacity 
-          style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+          className={`w-10 h-10 rounded-full justify-center items-center ml-3 ${!inputText.trim() ? 'bg-gray-300' : 'bg-green-500'}`}
           onPress={handleSend}
           disabled={!inputText.trim()}
         >
@@ -137,107 +131,3 @@ export default function CustomerService() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  moreButton: {
-    padding: 8,
-  },
-  messagesList: {
-    padding: 16,
-  },
-  messageContainer: {
-    marginBottom: 16,
-    maxWidth: '80%',
-  },
-  userMessageContainer: {
-    alignSelf: 'flex-end',
-  },
-  systemMessageContainer: {
-    alignSelf: 'flex-start',
-  },
-  messageBubble: {
-    padding: 12,
-    borderRadius: 16,
-  },
-  userMessageBubble: {
-    backgroundColor: '#4CAF50',
-    borderBottomRightRadius: 4,
-  },
-  systemMessageBubble: {
-    backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  messageText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  userMessageText: {
-    color: '#FFFFFF',
-  },
-  systemMessageText: {
-    color: '#333333',
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#999999',
-    marginTop: 4,
-    alignSelf: 'flex-end',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-  },
-  input: {
-    flex: 1,
-    minHeight: 40,
-    maxHeight: 100,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 20,
-    fontSize: 14,
-    color: '#333333',
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#4CAF50',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#CCCCCC',
-  },
-});

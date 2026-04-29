@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function Profile() {
   const router = useRouter();
-  // 模拟用户数据
   const user = {
     name: '张三',
     phone: '15829383745',
@@ -13,7 +12,6 @@ export default function Profile() {
     orderCount: 78,
   };
 
-  // 功能列表
   const menuItems = [
     { id: '1', name: '我的车辆', icon: 'car' },
     { id: '2', name: '客服中心', icon: 'headset' },
@@ -26,65 +24,69 @@ export default function Profile() {
   ];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
       {/* 用户信息区域 */}
-      <View style={styles.userSection}>
-        <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userPhone}>{user.phone}</Text>
+      <View className="flex-row items-center bg-[#2C3E50] p-5">
+        <Image source={{ uri: user.avatar }} className="w-15 h-15 rounded-full mr-4" />
+        <View className="flex-1">
+          <Text className="text-white text-lg font-bold mb-1">{user.name}</Text>
+          <Text className="text-gray-300 text-sm">{user.phone}</Text>
         </View>
-        <TouchableOpacity style={styles.arrow}>
+        <TouchableOpacity className="p-2">
           <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
       {/* 钱包和订单卡片 */}
-      <View style={styles.cardsSection}>
-        <TouchableOpacity style={styles.card} onPress={() => router.push('/wallet')}>
-          <View style={styles.cardContent}>
-            <Ionicons name="wallet" size={20} color="#FF6B00" />
-            <Text style={styles.cardTitle}>我的钱包 (元)</Text>
-            <Text style={styles.cardValue}>¥{user.balance.toFixed(2)}</Text>
+      <View className="flex-row bg-white mx-4 mt-4 rounded-lg overflow-hidden">
+        <TouchableOpacity className="flex-1 flex-row items-center p-4 border-r border-gray-200" onPress={() => router.push('/wallet')}>
+          <View className="flex-1">
+            <View className="flex-row items-center mb-1">
+              <Ionicons name="wallet" size={20} color="#FF6B00" />
+              <Text className="text-gray-600 text-sm ml-2">我的钱包 (元)</Text>
+            </View>
+            <Text className="text-gray-800 text-lg font-bold">¥{user.balance.toFixed(2)}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
-          <View style={styles.cardContent}>
-            <Ionicons name="document-text" size={20} color="#4CAF50" />
-            <Text style={styles.cardTitle}>我的订单</Text>
-            <Text style={styles.userPhone}>已完成{user.orderCount}个订单</Text>
+        <TouchableOpacity className="flex-1 flex-row items-center p-4">
+          <View className="flex-1">
+            <View className="flex-row items-center mb-1">
+              <Ionicons name="document-text" size={20} color="#4CAF50" />
+              <Text className="text-gray-600 text-sm ml-2">我的订单</Text>
+            </View>
+            <Text className="text-gray-400 text-sm">已完成{user.orderCount}个订单</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
       </View>
 
       {/* 专属助手 */}
-      <View style={styles.assistantSection}>
-        <Image source={{ uri: 'https://picsum.photos/50' }} style={styles.assistantAvatar} />
-        <View style={styles.assistantInfo}>
-          <Text style={styles.assistantTitle}>我是您的专属助手</Text>
-          <Text style={styles.assistantText}>很高兴为您服务，有问题随时联系我</Text>
+      <View className="flex-row items-center bg-white mx-4 mt-2.5 p-4">
+        <Image source={{ uri: 'https://picsum.photos/50' }} className="w-12 h-12 rounded-full mr-3" />
+        <View className="flex-1">
+          <Text className="text-gray-800 text-base font-bold mb-1">我是您的专属助手</Text>
+          <Text className="text-gray-600 text-sm">很高兴为您服务，有问题随时联系我</Text>
         </View>
-        <TouchableOpacity style={styles.contactButton}>
-          <Text style={styles.contactButtonText}>立即联系</Text>
+        <TouchableOpacity className="bg-orange-500 py-1.5 px-3 rounded-full">
+          <Text className="text-white text-sm font-bold">立即联系</Text>
         </TouchableOpacity>
       </View>
 
       {/* 功能菜单列表 */}
       {menuItems.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          style={styles.menuItem}
+        <TouchableOpacity 
+          key={item.id} 
+          className="flex-row items-center justify-between bg-white px-4 py-4 border-b border-gray-50"
           onPress={() => {
             if (item.id === '1') {
               router.push('/vehicle');
             }
           }}
         >
-          <View style={styles.menuLeft}>
+          <View className="flex-row items-center">
             <Ionicons name={item.icon as any} size={20} color="#666666" />
-            <Text style={styles.menuText}>{item.name}</Text>
+            <Text className="text-gray-800 text-base ml-3">{item.name}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
@@ -92,120 +94,3 @@ export default function Profile() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  userSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2C3E50',
-    padding: 20,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 16,
-  },
-  userInfo: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  userPhone: {
-    fontSize: 14,
-    color: '#E0E0E0',
-  },
-  arrow: {
-    padding: 8,
-  },
-  cardsSection: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  card: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRightWidth: 1,
-    borderRightColor: '#E5E5EA',
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 4,
-  },
-  cardValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    marginBottom: 1,
-  },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuText: {
-    fontSize: 16,
-    color: '#333333',
-    marginLeft: 12,
-  },
-  assistantSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    marginVertical: 10,
-  },
-  assistantAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  assistantInfo: {
-    flex: 1,
-  },
-  assistantTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 4,
-  },
-  assistantText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  contactButton: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  contactButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-});

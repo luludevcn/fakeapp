@@ -4,9 +4,8 @@ import { ExpoGaodeMapModule, MapView, Marker, Polyline } from 'expo-gaode-map';
 import { PermissionStatus } from 'expo-modules-core';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 
 export default function Navigation() {
   const router = useRouter();
@@ -55,7 +54,6 @@ export default function Navigation() {
   const startTracking = async () => {
     setIsTracking(true);
     try {
-      // 模拟目的地（实际应用中应该从订单获取）
       const destination = {
         latitude: 39.9142,
         longitude: 116.4074,
@@ -104,30 +102,30 @@ export default function Navigation() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-100">
       {/* 头部 */}
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleNavigateBack} style={styles.backButton}>
+      <SafeAreaView className="bg-white" edges={['top']}>
+        <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+          <TouchableOpacity className="p-2" onPress={handleNavigateBack}>
             <Ionicons name="arrow-back" size={24} color="#333333" />
           </TouchableOpacity>
-          <Text style={styles.title}>导航</Text>
-          <TouchableOpacity style={styles.moreButton}>
+          <Text className="text-lg font-bold text-gray-800">导航</Text>
+          <TouchableOpacity className="p-2">
             <Ionicons name="ellipsis-vertical" size={24} color="#333333" />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
 
       {/* 地图 */}
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialCameraPosition={{
-          target: location,
-          zoom: 16
-        }}
-        myLocationEnabled
-      >
+      <View className="flex-1">
+        <MapView
+          ref={mapRef}
+          initialCameraPosition={{
+            target: location,
+            zoom: 16
+          }}
+          myLocationEnabled
+        >
         {/* 目的地标记 */}
         {navigation.destination && (
           <Marker
@@ -137,7 +135,6 @@ export default function Navigation() {
           />
         )}
 
-        {/* 路线 */}
         {navigation.destination && (
           <Polyline
             points={[location, navigation.destination]}
@@ -146,15 +143,16 @@ export default function Navigation() {
           />
         )}
       </MapView>
+      </View>
 
       {/* 底部信息栏 */}
-      <View style={styles.bottomBar}>
-        <View style={styles.routeInfo}>
-          <Text style={styles.routeText}>距离目的地约 3.5 公里</Text>
-          <Text style={styles.etaText}>预计需要 15 分钟</Text>
+      <View className="bg-white p-4 border-t border-gray-200">
+        <View className="mb-4">
+          <Text className="text-base text-gray-800 mb-1">距离目的地约 3.5 公里</Text>
+          <Text className="text-sm text-gray-600">预计需要 15 分钟</Text>
         </View>
         <TouchableOpacity
-          style={[styles.trackingButton, isTracking && styles.stopButton]}
+          className={`flex-row items-center justify-center py-3.5 rounded-lg ${isTracking ? 'bg-red-500' : 'bg-green-500'}`}
           onPress={isTracking ? stopTracking : startTracking}
         >
           <Ionicons
@@ -162,7 +160,7 @@ export default function Navigation() {
             size={24}
             color="#FFFFFF"
           />
-          <Text style={styles.trackingButtonText}>
+          <Text className="text-white text-base font-bold ml-2">
             {isTracking ? '停止导航' : '开始导航'}
           </Text>
         </TouchableOpacity>
@@ -170,91 +168,10 @@ export default function Navigation() {
 
       {/* 错误提示 */}
       {errorMsg ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{errorMsg}</Text>
+        <View className="absolute top-20 left-4 right-4 bg-red-50 p-3 rounded-lg">
+          <Text className="text-red-700 text-sm">{errorMsg}</Text>
         </View>
       ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  moreButton: {
-    padding: 8,
-  },
-  map: {
-    flex: 1,
-  },
-  bottomBar: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-  },
-  routeInfo: {
-    marginBottom: 16,
-  },
-  routeText: {
-    fontSize: 16,
-    color: '#333333',
-    marginBottom: 4,
-  },
-  etaText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  trackingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4CAF50',
-    paddingVertical: 14,
-    borderRadius: 8,
-  },
-  stopButton: {
-    backgroundColor: '#F44336',
-  },
-  trackingButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  errorContainer: {
-    position: 'absolute',
-    top: 80,
-    left: 16,
-    right: 16,
-    backgroundColor: '#FFEBEE',
-    padding: 12,
-    borderRadius: 8,
-  },
-  errorText: {
-    color: '#C62828',
-    fontSize: 14,
-  },
-});

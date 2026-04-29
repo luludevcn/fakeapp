@@ -2,8 +2,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 type MessageCategory = 'all' | 'order' | 'system' | 'activity';
 
@@ -41,16 +40,13 @@ export default function Messages() {
 
   const handleMessagePress = (messageId: string) => {
     if (isSelectMode) {
-      // 选择模式：切换选择状态
-      setSelectedMessages(prev =>
-        prev.includes(messageId)
-          ? prev.filter(id => id !== messageId)
+      setSelectedMessages(prev => 
+        prev.includes(messageId) 
+          ? prev.filter(id => id !== messageId) 
           : [...prev, messageId]
       );
     } else {
-      // 普通模式：标记为已读并查看详情
       markMessageAsRead(messageId);
-      // 这里可以跳转到消息详情页面，暂时用Alert模拟
       Alert.alert('消息详情', messages.find(m => m.id === messageId)?.content || '');
     }
   };
@@ -92,12 +88,12 @@ export default function Messages() {
     const isSelected = selectedMessages.includes(item.id);
     return (
       <TouchableOpacity
-        style={[styles.messageItem, isSelected && styles.selectedMessage]}
+        className={`flex-row items-center bg-white px-4 py-4 border-b border-gray-100 ${isSelected ? 'bg-blue-50' : ''}`}
         onPress={() => handleMessagePress(item.id)}
         onLongPress={() => handleLongPress(item.id)}
       >
         {isSelectMode && (
-          <View style={styles.checkboxContainer}>
+          <View className="mr-3">
             <Ionicons
               name={isSelected ? 'checkbox' : 'square-outline'}
               size={20}
@@ -105,15 +101,15 @@ export default function Messages() {
             />
           </View>
         )}
-        <View style={[styles.messageIndicator, !item.read && styles.unreadIndicator]} />
-        <View style={styles.messageContent}>
-          <View style={styles.messageHeader}>
-            <Text style={[styles.messageTitle, !item.read && styles.unreadTitle]}>
+        <View className={`w-2 h-2 rounded-full mr-3 ${!item.read ? 'bg-orange-500' : 'bg-transparent'}`} />
+        <View className="flex-1">
+          <View className="flex-row justify-between mb-1">
+            <Text className={`text-base ${!item.read ? 'text-gray-800 font-bold' : 'text-gray-800'}`}>
               {item.title}
             </Text>
-            <Text style={styles.messageTime}>{item.time}</Text>
+            <Text className="text-xs text-gray-400">{item.time}</Text>
           </View>
-          <Text style={[styles.messageText, !item.read && styles.unreadText]}>
+          <Text className={`text-sm ${!item.read ? 'text-gray-800' : 'text-gray-600'} leading-relaxed`}>
             {item.content}
           </Text>
         </View>
@@ -122,54 +118,24 @@ export default function Messages() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-100">
       {/* 头部 */}
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#333333" />
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#333333" />
+        </TouchableOpacity>
+        <Text className="text-lg font-bold text-gray-800">
+          {isSelectMode ? `已选择 ${selectedMessages.length} 条` : '消息中心'}
+        </Text>
+        {isSelectMode ? (
+          <TouchableOpacity className="p-2" onPress={handleDeleteSelected}>
+            <Text className="text-sm text-red-500">删除</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>
-            {isSelectMode ? `已选择 ${selectedMessages.length} 条` : '消息中心'}
-          </Text>
-          {isSelectMode ? (
-            <TouchableOpacity onPress={handleDeleteSelected} style={styles.deleteButton}>
-              <Text style={styles.deleteButtonText}>删除</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.moreButton}>
-              <Text style={styles.moreButtonText}>全部已读</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </SafeAreaView>
-
-      {/* 分类标签栏 */}
-      <View style={styles.categoryBar}>
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category.key}
-            style={[
-              styles.categoryItem,
-              selectedCategory === category.key && styles.categoryItemActive
-            ]}
-            onPress={() => setSelectedCategory(category.key)}
-          >
-            <Ionicons
-              name={category.icon as any}
-              size={18}
-              color={selectedCategory === category.key ? '#FF6B00' : '#666666'}
-            />
-            <Text
-              style={[
-                styles.categoryText,
-                selectedCategory === category.key && styles.categoryTextActive
-              ]}
-            >
-              {category.label}
-            </Text>
+        ) : (
+          <TouchableOpacity className="p-2" onPress={handleMarkAllAsRead}>
+            <Text className="text-sm text-green-500">全部已读</Text>
           </TouchableOpacity>
-        ))}
+        )}
       </View>
 
       {/* 消息列表 */}
@@ -177,147 +143,14 @@ export default function Messages() {
         data={filteredMessages}
         renderItem={renderMessage}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.messagesList}
+        contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <View className="flex-1 justify-center items-center pt-24">
             <Ionicons name="mail-outline" size={64} color="#CCCCCC" />
-            <Text style={styles.emptyText}>暂无消息</Text>
+            <Text className="text-base text-gray-400 mt-4">暂无消息</Text>
           </View>
         }
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  moreButton: {
-    padding: 8,
-  },
-  moreButtonText: {
-    fontSize: 14,
-    color: '#4CAF50',
-  },
-  deleteButton: {
-    padding: 8,
-  },
-  deleteButtonText: {
-    fontSize: 14,
-    color: '#F44336',
-  },
-  messagesList: {
-    flexGrow: 1,
-  },
-  messageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  selectedMessage: {
-    backgroundColor: '#F0F8FF',
-  },
-  checkboxContainer: {
-    marginRight: 12,
-  },
-  messageIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'transparent',
-    marginRight: 12,
-  },
-  unreadIndicator: {
-    backgroundColor: '#FF6B00',
-  },
-  messageContent: {
-    flex: 1,
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  messageTitle: {
-    fontSize: 16,
-    color: '#333333',
-  },
-  unreadTitle: {
-    fontWeight: 'bold',
-  },
-  messageTime: {
-    fontSize: 12,
-    color: '#999999',
-  },
-  messageText: {
-    fontSize: 14,
-    color: '#666666',
-    lineHeight: 20,
-  },
-  unreadText: {
-    color: '#333333',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 100,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999999',
-    marginTop: 16,
-  },
-  categoryBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  categoryItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  categoryItemActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#FF6B00',
-  },
-  categoryText: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 4,
-  },
-  categoryTextActive: {
-    color: '#FF6B00',
-    fontWeight: 'bold',
-  },
-});

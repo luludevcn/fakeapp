@@ -28,8 +28,7 @@ interface User {
 interface AppState {
   // 用户状态
   user: User | null;
-  setUser: (user: User) => void;
-
+setUser: (user: User | null) => void;
   // 订单状态
   orders: Order[];
   pendingOrders: Order[];
@@ -78,8 +77,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   // 用户状态
   user: null,
-  setUser: (user) => set({ user }),
-
+setUser: (user) => set({ user: user || null }),
   // 订单状态
   orders: [
     {

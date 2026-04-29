@@ -1,9 +1,10 @@
 import { useAppStore } from "@/store/useAppStore";
 import { Ionicons } from "@expo/vector-icons";
-import { ExpoGaodeMapModule, MapView, Marker } from 'expo-gaode-map';
+import ExpoGaodeMapModule, { MapView, Marker } from 'expo-gaode-map';
+import { PermissionStatus } from "expo-modules-core";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface LocationState {
   latitude: number;
@@ -23,8 +24,7 @@ interface Order {
   status?: string;
 }
 
-
-function OrderComponent() {
+export default function OrderComponent() {
   const router = useRouter();
   const { pendingOrders, myOrders, acceptOrder, getPendingOrders, getMyOrders, updateOrderStatus } = useAppStore();
   const [activeTab, setActiveTab] = useState<'pending' | 'my'>('pending');
@@ -33,31 +33,30 @@ function OrderComponent() {
   const mapRef = useRef<React.ElementRef<typeof MapView>>(null);
 
   useEffect(() => {
-    // 初始化高德地图隐私配置
-    const privacyStatus = ExpoGaodeMapModule.getPrivacyStatus();
-    if (!privacyStatus.isReady) {
-      ExpoGaodeMapModule.setPrivacyConfig({
-        hasShow: true,
-        hasContainsPrivacy: true,
-        hasAgree: true,
-        privacyVersion: '2026-04-23'
-      });
-    }
-
-    // 加载待接单列表
     getPendingOrders();
-    // 加载已接订单列表
     getMyOrders();
 
-    // 获取当前位置
     (async () => {
       try {
+        // 初始化高德地图隐私配置
+        const privacyStatus = ExpoGaodeMapModule.getPrivacyStatus();
+        if (!privacyStatus.isReady) {
+          ExpoGaodeMapModule.setPrivacyConfig({
+            hasShow: true,
+            hasContainsPrivacy: true,
+            hasAgree: true,
+            privacyVersion: '2026-04-23'
+          });
+        }
+
+        // 请求位置权限
         const permissionStatus = await ExpoGaodeMapModule.requestLocationPermission();
-        if ((permissionStatus as any) !== 'granted' && (permissionStatus as any) !== 1) {
+        if (permissionStatus.status !== PermissionStatus.GRANTED) {
           setErrorMsg('位置权限被拒绝');
           return;
         }
 
+        // 获取当前位置
         const locationData = await ExpoGaodeMapModule.getCurrentLocation();
         setLocation({
           latitude: locationData.latitude,
@@ -71,14 +70,11 @@ function OrderComponent() {
   }, []);
 
   const handleOrderPress = useCallback((order: Order) => {
-    // 跳转到订单详情页面
     router.push(`/order/${order.id}`);
   }, [router]);
 
   const handleAcceptOrder = useCallback((orderId: string) => {
-    // 调用接单方法
     acceptOrder(orderId);
-    // 显示接单成功提示
     Alert.alert('接单成功', '订单已成功接取，祝您旅途愉快！');
   }, [acceptOrder]);
 
@@ -95,47 +91,77 @@ function OrderComponent() {
     return pendingOrders.slice(0, 3);
   }, [pendingOrders]);
 
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case '已接单':
+        return 'bg-orange-100';
+      case '配送中':
+        return 'bg-blue-100';
+      case '已完成':
+        return 'bg-green-100';
+      default:
+        return 'bg-gray-100';
+    }
+  };
+
+  const getStatusTextStyle = (status: string) => {
+    switch (status) {
+      case '已接单':
+        return 'text-orange-600';
+      case '配送中':
+        return 'text-blue-600';
+      case '已完成':
+        return 'text-green-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
       {/* 顶部横幅 */}
-      <View style={styles.banner}>
-        <Image
-          source={{ uri: 'https://picsum.photos/400/200' }}
-          style={styles.bannerImage}
+      <View className="mx-4 my-4 rounded-lg overflow-hidden bg-white">
+        <Image 
+          source={{ uri: 'https://picsum.photos/400/200' }} 
+          className="w-full h-[150px]"
           resizeMode="cover"
         />
-        <View style={styles.bannerContent}>
-          <Text style={styles.bannerTitle}>加入快狗打车</Text>
-          <Text style={styles.bannerSubtitle}>海量订单 多劳多得</Text>
-          <View style={styles.bannerTags}>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>知名品牌</Text>
+        <View className="p-4">
+          <Text className="text-lg font-bold text-gray-800 mb-1">加入快狗打车</Text>
+          <Text className="text-sm text-gray-600 mb-3">海量订单 多劳多得</Text>
+          <View className="flex-row mb-4">
+            <View className="bg-gray-100 py-1 px-2 rounded mr-2">
+              <Text className="text-xs text-gray-600">知名品牌</Text>
             </View>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>自由出工</Text>
+            <View className="bg-gray-100 py-1 px-2 rounded mr-2">
+              <Text className="text-xs text-gray-600">自由出工</Text>
             </View>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>收入有保障</Text>
+            <View className="bg-gray-100 py-1 px-2 rounded">
+              <Text className="text-xs text-gray-600">收入有保障</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.joinButton}>
-            <Text style={styles.joinButtonText}>立即加盟</Text>
+          <TouchableOpacity className="bg-orange-500 py-3 rounded-lg items-center">
+            <Text className="text-white font-bold text-base">立即加盟</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* 地图区域 */}
-      <View style={styles.mapContainer}>
+      <View className="mx-4 mb-4 rounded-lg overflow-hidden h-[200px]">
         <MapView
           ref={mapRef}
-          style={styles.map}
           initialCameraPosition={{
             target: location,
-            zoom: 13
+            zoom: 14
           }}
           myLocationEnabled
         >
-          {/* 订单起点标记 */}
+          <Marker
+            position={location}
+            title="我的位置"
+            icon="https://api.map.baidu.com/lbsapi/createmap/images/poi-marker-green.png"
+          />
+
           {displayedPendingOrders.map((order) => (
             <Marker
               key={`from-${order.id}`}
@@ -148,7 +174,6 @@ function OrderComponent() {
             />
           ))}
 
-          {/* 订单终点标记 */}
           {displayedPendingOrders.map((order) => (
             <Marker
               key={`to-${order.id}`}
@@ -161,125 +186,125 @@ function OrderComponent() {
             />
           ))}
         </MapView>
-        <View style={styles.mapOverlay}>
-          <Text style={styles.mapOverlayText}>附近订单</Text>
-          <Text style={styles.mapOverlaySubtext}>{displayedPendingOrders.length} 个待接订单</Text>
+        <View className="absolute top-3 left-3 bg-black/60 py-2 px-3 rounded">
+          <Text className="text-white text-sm font-bold">附近订单</Text>
+          <Text className="text-white text-xs mt-0.5">{displayedPendingOrders.length} 个待接订单</Text>
         </View>
       </View>
 
       {/* 标签页切换 */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
+      <View className="flex-row bg-white mx-4 mb-4 rounded-lg p-1">
+        <TouchableOpacity 
+          className={`flex-1 py-3 items-center rounded-md transition-colors ${activeTab === 'pending' ? 'bg-orange-500' : ''}`}
           onPress={() => setActiveTab('pending')}
         >
-          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>待接单</Text>
+          <Text className={`text-sm ${activeTab === 'pending' ? 'text-white font-bold' : 'text-gray-600'}`}>待接单</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'my' && styles.activeTab]}
+        <TouchableOpacity 
+          className={`flex-1 py-3 items-center rounded-md transition-colors ${activeTab === 'my' ? 'bg-orange-500' : ''}`}
           onPress={() => setActiveTab('my')}
         >
-          <Text style={[styles.tabText, activeTab === 'my' && styles.activeTabText]}>我的订单</Text>
+          <Text className={`text-sm ${activeTab === 'my' ? 'text-white font-bold' : 'text-gray-600'}`}>我的订单</Text>
         </TouchableOpacity>
       </View>
 
       {/* 订单列表 */}
-      <View style={styles.ordersList}>
+      <View className="px-4 pb-4">
         {activeTab === 'pending' ? (
           displayOrders.length > 0 ? (
             displayOrders.map((order) => (
-              <TouchableOpacity
-                key={order.id}
-                style={styles.orderItem}
+              <TouchableOpacity 
+                key={order.id} 
+                className="bg-white rounded-lg p-4 mb-3 flex-row justify-between items-center"
                 onPress={() => handleOrderPress(order)}
               >
-                <View style={styles.orderInfo}>
-                  <View style={styles.locationRow}>
+                <View className="flex-1 mr-3">
+                  <View className="flex-row items-center mb-2">
                     <Ionicons name="location" size={16} color="#4CAF50" />
-                    <Text style={styles.locationText}>{order.from}</Text>
+                    <Text className="text-sm text-gray-800 ml-2 flex-1">{order.from}</Text>
                   </View>
-                  <View style={styles.locationRow}>
+                  <View className="flex-row items-center mb-2">
                     <Ionicons name="location" size={16} color="#F44336" />
-                    <Text style={styles.locationText}>{order.to}</Text>
+                    <Text className="text-sm text-gray-800 ml-2 flex-1">{order.to}</Text>
                   </View>
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceText}>¥{order.price.toFixed(2)}</Text>
+                  <View className="flex-row items-center mt-2">
+                    <Text className="text-lg font-bold text-red-500">¥{order.price.toFixed(2)}</Text>
                     {order.补贴 && (
-                      <View style={styles.subsidyTag}>
-                        <Text style={styles.subsidyText}>平台补贴{order.补贴}元</Text>
+                      <View className="bg-orange-100 py-0.5 px-2 rounded ml-2">
+                        <Text className="text-xs text-orange-500">平台补贴{order.补贴}元</Text>
                       </View>
                     )}
                   </View>
                 </View>
-                <TouchableOpacity style={styles.acceptButton} onPress={() => handleAcceptOrder(order.id)}>
-                  <Text style={styles.acceptButtonText}>立即接单</Text>
+                <TouchableOpacity className="bg-orange-500 py-2.5 px-5 rounded-full" onPress={() => handleAcceptOrder(order.id)}>
+                  <Text className="text-white font-bold">立即接单</Text>
                 </TouchableOpacity>
               </TouchableOpacity>
             ))
           ) : (
-            <View style={styles.emptyState}>
+            <View className="items-center py-[60px]">
               <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
-              <Text style={styles.emptyText}>暂无可用订单</Text>
-              <Text style={styles.emptySubtext}>请稍后再试</Text>
+              <Text className="text-base text-gray-600 mt-4">暂无可用订单</Text>
+              <Text className="text-sm text-gray-400 mt-2">请稍后再试</Text>
             </View>
           )
         ) : (
           displayOrders.length > 0 ? (
             displayOrders.map((order) => (
-              <TouchableOpacity
-                key={order.id}
-                style={styles.orderItem}
+              <TouchableOpacity 
+                key={order.id} 
+                className="bg-white rounded-lg p-4 mb-3 flex-row justify-between items-center"
                 onPress={() => handleOrderPress(order)}
               >
-                <View style={styles.orderInfo}>
-                  <View style={styles.statusRow}>
-                    <View style={[styles.statusTag, order.status === '已接单' ? styles.statusPending : order.status === '配送中' ? styles.statusDelivering : styles.statusCompleted]}>
-                      <Text style={styles.statusText}>{order.status}</Text>
+                <View className="flex-1 mr-3">
+                  <View className="flex-row justify-between items-center mb-2">
+                    <View className={`py-1 px-2 rounded ${getStatusStyle(order.status)}`}>
+                      <Text className={`text-xs font-bold ${getStatusTextStyle(order.status)}`}>{order.status}</Text>
                     </View>
-                    <Text style={styles.distanceText}>距您{order.distance}</Text>
+                    <Text className="text-xs text-gray-400">距您{order.distance}</Text>
                   </View>
-                  <View style={styles.locationRow}>
+                  <View className="flex-row items-center mb-2">
                     <Ionicons name="location" size={16} color="#4CAF50" />
-                    <Text style={styles.locationText}>{order.from}</Text>
+                    <Text className="text-sm text-gray-800 ml-2 flex-1">{order.from}</Text>
                   </View>
-                  <View style={styles.locationRow}>
+                  <View className="flex-row items-center mb-2">
                     <Ionicons name="location" size={16} color="#F44336" />
-                    <Text style={styles.locationText}>{order.to}</Text>
+                    <Text className="text-sm text-gray-800 ml-2 flex-1">{order.to}</Text>
                   </View>
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceText}>¥{order.price.toFixed(2)}</Text>
+                  <View className="flex-row items-center mt-2">
+                    <Text className="text-lg font-bold text-red-500">¥{order.price.toFixed(2)}</Text>
                     {order.补贴 && (
-                      <View style={styles.subsidyTag}>
-                        <Text style={styles.subsidyText}>平台补贴{order.补贴}元</Text>
+                      <View className="bg-orange-100 py-0.5 px-2 rounded ml-2">
+                        <Text className="text-xs text-orange-500">平台补贴{order.补贴}元</Text>
                       </View>
                     )}
                   </View>
                 </View>
-                <View style={styles.actionButtons}>
+                <View className="items-end">
                   {order.status === '已接单' && (
-                    <TouchableOpacity
-                      style={styles.actionButton}
+                    <TouchableOpacity 
+                      className="bg-orange-500 py-2 px-4 rounded-full"
                       onPress={() => handleUpdateOrderStatus(order.id, '配送中')}
                     >
-                      <Text style={styles.actionButtonText}>开始配送</Text>
+                      <Text className="text-white text-xs font-bold">开始配送</Text>
                     </TouchableOpacity>
                   )}
                   {order.status === '配送中' && (
-                    <TouchableOpacity
-                      style={styles.actionButton}
+                    <TouchableOpacity 
+                      className="bg-orange-500 py-2 px-4 rounded-full"
                       onPress={() => handleUpdateOrderStatus(order.id, '已完成')}
                     >
-                      <Text style={styles.actionButtonText}>完成订单</Text>
+                      <Text className="text-white text-xs font-bold">完成订单</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               </TouchableOpacity>
             ))
           ) : (
-            <View style={styles.emptyState}>
+            <View className="items-center py-[60px]">
               <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
-              <Text style={styles.emptyText}>暂无订单</Text>
-              <Text style={styles.emptySubtext}>您还没有接取任何订单</Text>
+              <Text className="text-base text-gray-600 mt-4">暂无订单</Text>
+              <Text className="text-sm text-gray-400 mt-2">您还没有接取任何订单</Text>
             </View>
           )
         )}
@@ -287,236 +312,3 @@ function OrderComponent() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  banner: {
-    margin: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-  },
-  bannerImage: {
-    width: '100%',
-    height: 150,
-  },
-  bannerContent: {
-    padding: 16,
-  },
-  bannerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 4,
-  },
-  bannerSubtitle: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 12,
-  },
-  bannerTags: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  tag: {
-    backgroundColor: '#F0F0F0',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  tagText: {
-    fontSize: 12,
-    color: '#666666',
-  },
-  joinButton: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  joinButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  activeTab: {
-    backgroundColor: '#FF6B00',
-  },
-  tabText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  activeTabText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  ordersList: {
-    padding: 16,
-  },
-  orderItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  distanceText: {
-    fontSize: 12,
-    color: '#999999',
-  },
-  orderItemActive: {
-    backgroundColor: '#FF6B00',
-  },
-  orderItemActiveText: {
-    color: '#FFFFFF',
-  },
-  orderInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statusTag: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  statusPending: {
-    backgroundColor: '#FFF3E0',
-  },
-  statusDelivering: {
-    backgroundColor: '#E3F2FD',
-  },
-  statusCompleted: {
-    backgroundColor: '#E8F5E8',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#333333',
-    marginLeft: 8,
-    flex: 1,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  priceText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#F44336',
-  },
-  subsidyTag: {
-    backgroundColor: '#FFF3E0',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  subsidyText: {
-    fontSize: 12,
-    color: '#FF9800',
-  },
-  acceptButton: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-  },
-  acceptButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  actionButtons: {
-    alignItems: 'flex-end',
-  },
-  actionButton: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999999',
-    marginTop: 8,
-  },
-  mapContainer: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-    height: 200,
-  },
-  map: {
-    flex: 1,
-  },
-  mapOverlay: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-  },
-  mapOverlayText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  mapOverlaySubtext: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    marginTop: 2,
-  },
-});
-
-export default React.memo(OrderComponent);

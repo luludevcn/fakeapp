@@ -1,14 +1,12 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function IncomeReport() {
   const router = useRouter();
-  const [selectedPeriod, setSelectedPeriod] = useState('month'); // day, week, month, year
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
 
-  // 模拟收入数据
   const incomeData = {
     day: {
       total: 328.85,
@@ -46,26 +44,24 @@ export default function IncomeReport() {
   const currentData = incomeData[selectedPeriod as keyof typeof incomeData];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>收入报表</Text>
-        <View style={styles.placeholder} />
-        </View>
-      </SafeAreaView>
+        <Text className="text-lg font-bold text-gray-800">收入报表</Text>
+        <View className="w-10" />
+      </View>
 
       {/* 时间选择器 */}
-      <View style={styles.periodSelector}>
+      <View className="flex-row bg-white py-3 px-4 border-b border-gray-200">
         {periods.map((period) => (
           <TouchableOpacity
             key={period.id}
-            style={[styles.periodItem, selectedPeriod === period.id && styles.selectedPeriodItem]}
+            className={`flex-1 py-2 items-center ${selectedPeriod === period.id ? 'border-b-2 border-orange-500' : ''}`}
             onPress={() => setSelectedPeriod(period.id)}
           >
-            <Text style={[styles.periodText, selectedPeriod === period.id && styles.selectedPeriodText]}>
+            <Text className={`text-sm ${selectedPeriod === period.id ? 'text-orange-500 font-bold' : 'text-gray-600'}`}>
               {period.label}
             </Text>
           </TouchableOpacity>
@@ -73,23 +69,23 @@ export default function IncomeReport() {
       </View>
 
       {/* 收入概览 */}
-      <View style={styles.overviewCard}>
-        <Text style={styles.overviewTitle}>收入概览</Text>
-        <Text style={styles.totalIncome}>¥{currentData.total.toFixed(2)}</Text>
-        <View style={styles.overviewDetails}>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>订单数</Text>
-            <Text style={styles.detailValue}>{currentData.orders}单</Text>
+      <View className="bg-white mx-4 mt-4 rounded-lg p-5 shadow">
+        <Text className="text-sm text-gray-600 mb-3">收入概览</Text>
+        <Text className="text-3xl font-bold text-gray-800 mb-5">¥{currentData.total.toFixed(2)}</Text>
+        <View className="flex-row justify-between">
+          <View className="flex-1 items-center">
+            <Text className="text-xs text-gray-400 mb-1">订单数</Text>
+            <Text className="text-base font-bold text-gray-800">{currentData.orders}单</Text>
           </View>
-          <View style={styles.detailDivider} />
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>平均收入</Text>
-            <Text style={styles.detailValue}>¥{currentData.average.toFixed(2)}</Text>
+          <View className="w-px h-10 bg-gray-200" />
+          <View className="flex-1 items-center">
+            <Text className="text-xs text-gray-400 mb-1">平均收入</Text>
+            <Text className="text-base font-bold text-gray-800">¥{currentData.average.toFixed(2)}</Text>
           </View>
-          <View style={styles.detailDivider} />
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>同比增长</Text>
-            <Text style={[styles.detailValue, currentData.trend.includes('+') ? styles.positiveTrend : styles.negativeTrend]}>
+          <View className="w-px h-10 bg-gray-200" />
+          <View className="flex-1 items-center">
+            <Text className="text-xs text-gray-400 mb-1">同比增长</Text>
+            <Text className={`text-base font-bold ${currentData.trend.includes('+') ? 'text-green-500' : 'text-red-500'}`}>
               {currentData.trend}
             </Text>
           </View>
@@ -97,206 +93,32 @@ export default function IncomeReport() {
       </View>
 
       {/* 收入趋势图 */}
-      <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>收入趋势</Text>
-        <View style={styles.chartPlaceholder}>
+      <View className="bg-white mx-4 mt-4 rounded-lg p-5">
+        <Text className="text-base font-bold text-gray-800 mb-4">收入趋势</Text>
+        <View className="h-[200px] justify-center items-center bg-gray-50 rounded-lg">
           <Ionicons name="bar-chart" size={80} color="#CCCCCC" />
-          <Text style={styles.chartPlaceholderText}>收入趋势图表</Text>
+          <Text className="text-sm text-gray-400 mt-2">收入趋势图表</Text>
         </View>
       </View>
 
       {/* 订单类型分析 */}
-      <View style={styles.analysisCard}>
-        <Text style={styles.analysisTitle}>订单类型分析</Text>
-        <View style={styles.typeItem}>
-          <Text style={styles.typeName}>实时订单</Text>
-          <View style={styles.typeBarContainer}>
-            <View style={[styles.typeBar, { width: '70%' }]} />
+      <View className="bg-white mx-4 mt-4 mb-4 rounded-lg p-5">
+        <Text className="text-base font-bold text-gray-800 mb-4">订单类型分析</Text>
+        <View className="flex-row items-center mb-3">
+          <Text className="w-20 text-sm text-gray-600">实时订单</Text>
+          <View className="flex-1 h-2 bg-gray-100 rounded-full mx-3">
+            <View className="h-full bg-orange-500 rounded-full" style={{ width: '70%' }} />
           </View>
-          <Text style={styles.typePercentage}>70%</Text>
+          <Text className="w-10 text-sm text-gray-800 text-right">70%</Text>
         </View>
-        <View style={styles.typeItem}>
-          <Text style={styles.typeName}>预约订单</Text>
-          <View style={styles.typeBarContainer}>
-            <View style={[styles.typeBar, { width: '30%' }]} />
+        <View className="flex-row items-center">
+          <Text className="w-20 text-sm text-gray-600">预约订单</Text>
+          <View className="flex-1 h-2 bg-gray-100 rounded-full mx-3">
+            <View className="h-full bg-orange-500 rounded-full" style={{ width: '30%' }} />
           </View>
-          <Text style={styles.typePercentage}>30%</Text>
+          <Text className="w-10 text-sm text-gray-800 text-right">30%</Text>
         </View>
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  placeholder: {
-    width: 40,
-  },
-  periodSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  periodItem: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  selectedPeriodItem: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#FF6B00',
-  },
-  periodText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  selectedPeriodText: {
-    color: '#FF6B00',
-    fontWeight: 'bold',
-  },
-  overviewCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderRadius: 8,
-    padding: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  overviewTitle: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 12,
-  },
-  totalIncome: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 20,
-  },
-  overviewDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  detailItem: {
-    flex: 1,
-  },
-  detailLabel: {
-    fontSize: 12,
-    color: '#999999',
-    marginBottom: 4,
-  },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  detailDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#E5E5EA',
-  },
-  positiveTrend: {
-    color: '#4CAF50',
-  },
-  negativeTrend: {
-    color: '#F44336',
-  },
-  chartCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    marginTop: 0,
-    borderRadius: 8,
-    padding: 20,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 16,
-  },
-  chartPlaceholder: {
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-  },
-  chartPlaceholderText: {
-    fontSize: 14,
-    color: '#999999',
-    marginTop: 8,
-  },
-  analysisCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    marginTop: 0,
-    borderRadius: 8,
-    padding: 20,
-  },
-  analysisTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 16,
-  },
-  typeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  typeName: {
-    width: 80,
-    fontSize: 14,
-    color: '#666666',
-  },
-  typeBarContainer: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 4,
-    marginHorizontal: 12,
-  },
-  typeBar: {
-    height: '100%',
-    backgroundColor: '#FF6B00',
-    borderRadius: 4,
-  },
-  typePercentage: {
-    width: 40,
-    fontSize: 14,
-    color: '#333333',
-    textAlign: 'right',
-  },
-});

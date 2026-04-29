@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function Withdraw() {
   const router = useRouter();
@@ -29,69 +28,61 @@ export default function Withdraw() {
     }
 
     setLoading(true);
-    try {
-      // 模拟提现操作
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert('成功', '提现申请已提交，预计1-2个工作日到账');
-        router.back();
-      }, 1500);
-    } catch (error) {
+    setTimeout(() => {
       setLoading(false);
-      Alert.alert('错误', '提现失败，请重试');
-    }
+      Alert.alert('成功', '提现申请已提交，预计1-2个工作日到账');
+      router.back();
+    }, 1500);
   };
 
   const quickAmounts = [50, 100, 500, 1000];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>提现</Text>
-        <View style={styles.placeholder} />
-        </View>
-      </SafeAreaView>
+        <Text className="text-lg font-bold text-gray-800">提现</Text>
+        <View className="w-10" />
+      </View>
 
-      <View style={styles.content}>
+      <View className="p-4">
         {/* 可用余额 */}
-        <View style={styles.balanceInfo}>
-          <Text style={styles.balanceLabel}>可用余额</Text>
-          <Text style={styles.balanceAmount}>¥{availableBalance.toFixed(2)}</Text>
+        <View className="bg-white rounded-lg p-4 mb-4">
+          <Text className="text-sm text-gray-600 mb-1">可用余额</Text>
+          <Text className="text-xl font-bold text-gray-800">¥{availableBalance.toFixed(2)}</Text>
         </View>
 
         {/* 提现金额 */}
-        <View style={styles.amountSection}>
-          <Text style={styles.label}>提现金额</Text>
+        <View className="bg-white rounded-lg p-4 mb-4">
+          <Text className="text-sm text-gray-600 mb-2">提现金额</Text>
           <TextInput
-            style={styles.amountInput}
+            className="border border-gray-200 rounded-lg p-3 text-base text-gray-800 mb-4"
             placeholder="请输入提现金额"
             placeholderTextColor="#999999"
             keyboardType="numeric"
             value={amount}
             onChangeText={setAmount}
           />
-          <View style={styles.quickAmounts}>
+          <View className="flex-row justify-between">
             {quickAmounts.map((quickAmount) => (
               <TouchableOpacity 
                 key={quickAmount}
-                style={styles.quickAmountItem}
+                className="flex-1 py-2.5 border border-gray-200 rounded-lg items-center mx-1"
                 onPress={() => setAmount(quickAmount.toString())}
               >
-                <Text style={styles.quickAmountText}>¥{quickAmount}</Text>
+                <Text className="text-sm text-gray-800">¥{quickAmount}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* 提现账户 */}
-        <View style={styles.accountSection}>
-          <Text style={styles.label}>银行卡号</Text>
+        <View className="bg-white rounded-lg p-4 mb-4">
+          <Text className="text-sm text-gray-600 mb-2">银行卡号</Text>
           <TextInput
-            style={styles.accountInput}
+            className="border border-gray-200 rounded-lg p-3 text-base text-gray-800"
             placeholder="请输入银行卡号"
             placeholderTextColor="#999999"
             value={account}
@@ -101,138 +92,17 @@ export default function Withdraw() {
 
         {/* 提现按钮 */}
         <TouchableOpacity 
-          style={[styles.withdrawButton, loading && styles.disabledButton]}
+          className={`py-4 rounded-lg items-center mt-2 ${loading ? 'bg-gray-400' : 'bg-orange-500'}`}
           onPress={handleWithdraw}
           disabled={loading}
         >
-          <Text style={styles.withdrawButtonText}>{loading ? '处理中...' : '确认提现'}</Text>
+          <Text className="text-white text-base font-bold">{loading ? '处理中...' : '确认提现'}</Text>
         </TouchableOpacity>
 
         {/* 提示信息 */}
-        <Text style={styles.tipText}>* 提现到账时间：1-2个工作日</Text>
-        <Text style={styles.tipText}>* 提现手续费：每笔2元</Text>
+        <Text className="text-xs text-gray-400 text-center mt-4">* 提现到账时间：1-2个工作日</Text>
+        <Text className="text-xs text-gray-400 text-center mt-2">* 提现手续费：每笔2元</Text>
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  placeholder: {
-    width: 40,
-  },
-  content: {
-    padding: 16,
-  },
-  balanceInfo: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  balanceLabel: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 4,
-  },
-  balanceAmount: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  amountSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 8,
-  },
-  amountInput: {
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#333333',
-    marginBottom: 16,
-  },
-  quickAmounts: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  quickAmountItem: {
-    flex: 1,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
-    alignItems: 'center',
-    marginHorizontal: 4,
-  },
-  quickAmountText: {
-    fontSize: 14,
-    color: '#333333',
-  },
-  accountSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  accountInput: {
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#333333',
-  },
-  withdrawButton: {
-    backgroundColor: '#FF6B00',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  withdrawButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  tipText: {
-    fontSize: 12,
-    color: '#999999',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-});

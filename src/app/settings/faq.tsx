@@ -1,8 +1,7 @@
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface FAQItem {
   id: string;
@@ -62,29 +61,27 @@ export default function FAQ() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-100">
       {/* 头部 */}
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>常见问题</Text>
-        <View style={styles.placeholder} />
-        </View>
-      </SafeAreaView>
+        <Text className="text-lg font-bold text-gray-800">常见问题</Text>
+        <View className="w-10" />
+      </View>
 
       {/* 常见问题列表 */}
-      <ScrollView style={styles.faqList} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {faqItems.map((item) => (
           <TouchableOpacity
             key={item.id}
-            style={styles.faqItem}
+            className="bg-white mx-4 mt-3 rounded-lg overflow-hidden"
             onPress={() => toggleExpand(item.id)}
             activeOpacity={0.8}
           >
-            <View style={styles.faqHeader}>
-              <Text style={styles.question}>{item.question}</Text>
+            <View className="flex-row items-center justify-between px-4 py-4">
+              <Text className="flex-1 text-base text-gray-800 mr-3">{item.question}</Text>
               <Ionicons
                 name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
                 size={20}
@@ -92,8 +89,8 @@ export default function FAQ() {
               />
             </View>
             {expandedId === item.id && (
-              <View style={styles.answerContainer}>
-                <Text style={styles.answer}>{item.answer}</Text>
+              <View className="px-4 pb-4 border-t border-gray-100">
+                <Text className="text-sm text-gray-600 leading-relaxed">{item.answer}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -102,66 +99,3 @@ export default function FAQ() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  placeholder: {
-    width: 40,
-  },
-  faqList: {
-    flex: 1,
-  },
-  faqItem: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  faqHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  question: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333333',
-    marginRight: 12,
-  },
-  answerContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-  },
-  answer: {
-    fontSize: 14,
-    color: '#666666',
-    lineHeight: 20,
-  },
-});

@@ -2,8 +2,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Settings() {
   const router = useRouter();
@@ -22,7 +21,7 @@ export default function Settings() {
           text: '确定',
           style: 'destructive',
           onPress: () => {
-            setUser(null as any);
+            setUser(null);
             router.replace('/auth/login' as any);
           },
         },
@@ -44,23 +43,21 @@ export default function Settings() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-100">
       {/* 头部 */}
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#333333" />
-          </TouchableOpacity>
-          <Text style={styles.title}>设置</Text>
-          <View style={styles.placeholder} />
-        </View>
-      </SafeAreaView>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#333333" />
+        </TouchableOpacity>
+        <Text className="text-lg font-bold text-gray-800">设置</Text>
+        <View className="w-10" />
+      </View>
 
       {/* 设置选项 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>通知设置</Text>
-        <View style={styles.settingItem}>
-          <Text style={styles.settingText}>推送通知</Text>
+      <View className="mt-4">
+        <Text className="text-sm text-gray-400 px-4 mb-2">通知设置</Text>
+        <View className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100">
+          <Text className="text-base text-gray-800">推送通知</Text>
           <Switch
             value={notifications}
             onValueChange={setNotifications}
@@ -70,10 +67,10 @@ export default function Settings() {
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>隐私设置</Text>
-        <View style={styles.settingItem}>
-          <Text style={styles.settingText}>位置服务</Text>
+      <View className="mt-4">
+        <Text className="text-sm text-gray-400 px-4 mb-2">隐私设置</Text>
+        <View className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100">
+          <Text className="text-base text-gray-800">位置服务</Text>
           <Switch
             value={location}
             onValueChange={setLocation}
@@ -81,24 +78,24 @@ export default function Settings() {
             thumbColor="#FFFFFF"
           />
         </View>
-        <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/privacy' as any)}>
-          <Text style={styles.settingText}>隐私设置详情</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100" onPress={() => router.push('/settings/privacy' as any)}>
+          <Text className="text-base text-gray-800">隐私设置详情</Text>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>支付设置</Text>
-        <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/payment' as any)}>
-          <Text style={styles.settingText}>默认支付方式</Text>
+      <View className="mt-4">
+        <Text className="text-sm text-gray-400 px-4 mb-2">支付设置</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100" onPress={() => router.push('/settings/payment' as any)}>
+          <Text className="text-base text-gray-800">默认支付方式</Text>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>外观设置</Text>
-        <View style={styles.settingItem}>
-          <Text style={styles.settingText}>深色模式</Text>
+      <View className="mt-4">
+        <Text className="text-sm text-gray-400 px-4 mb-2">外观设置</Text>
+        <View className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100">
+          <Text className="text-base text-gray-800">深色模式</Text>
           <Switch
             value={darkMode}
             onValueChange={setDarkMode}
@@ -108,102 +105,30 @@ export default function Settings() {
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>账户设置</Text>
-        <TouchableOpacity style={styles.settingItem} onPress={handlePrivacy}>
-          <Text style={styles.settingText}>隐私政策</Text>
+      <View className="mt-4">
+        <Text className="text-sm text-gray-400 px-4 mb-2">账户设置</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100" onPress={handlePrivacy}>
+          <Text className="text-base text-gray-800">隐私政策</Text>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.settingItem} onPress={handleTerms}>
-          <Text style={styles.settingText}>用户协议</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100" onPress={handleTerms}>
+          <Text className="text-base text-gray-800">用户协议</Text>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.settingItem} onPress={handleAbout}>
-          <Text style={styles.settingText}>关于我们</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3.5 border-b border-gray-100" onPress={handleAbout}>
+          <Text className="text-base text-gray-800">关于我们</Text>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/faq')}>
-          <Text style={styles.settingText}>常见问题</Text>
+        <TouchableOpacity className="flex-row items-center justify-between bg-white px-4 py-3.5" onPress={() => router.push('/settings/faq')}>
+          <Text className="text-base text-gray-800">常见问题</Text>
           <Ionicons name="chevron-forward" size={20} color="#999999" />
         </TouchableOpacity>
       </View>
 
       {/* 退出登录按钮 */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>退出登录</Text>
+      <TouchableOpacity className="mt-8 mx-4 bg-white py-3.5 rounded-lg items-center border border-red-500" onPress={handleLogout}>
+        <Text className="text-base text-red-500 font-bold">退出登录</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  placeholder: {
-    width: 40,
-  },
-  section: {
-    marginTop: 16,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    color: '#999999',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  settingText: {
-    fontSize: 16,
-    color: '#333333',
-  },
-  logoutButton: {
-    marginTop: 32,
-    marginHorizontal: 16,
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F44336',
-  },
-  logoutText: {
-    fontSize: 16,
-    color: '#F44336',
-    fontWeight: 'bold',
-  },
-});

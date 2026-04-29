@@ -1,8 +1,7 @@
-import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { FlatList, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface Transaction {
   id: string;
@@ -58,7 +57,7 @@ const mockTransactions: Transaction[] = [
 
 export default function WalletHistory() {
   const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [transactions] = useState<Transaction[]>(mockTransactions);
   const [selectedDate, setSelectedDate] = useState('全部');
 
   const dates = ['全部', '2026-04-21', '2026-04-20', '2026-04-19'];
@@ -68,30 +67,28 @@ export default function WalletHistory() {
     : transactions.filter(t => t.date === selectedDate);
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <View className="flex-1 bg-gray-100">
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>钱包明细</Text>
-        <View style={styles.placeholder} />
-        </View>
-      </SafeAreaView>
+        <Text className="text-lg font-bold text-gray-800">钱包明细</Text>
+        <View className="w-10" />
+      </View>
 
       {/* 日期筛选 */}
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
-        style={styles.dateFilter}
+        className="bg-white py-3 px-4 border-b border-gray-200"
       >
         {dates.map((date) => (
           <TouchableOpacity
             key={date}
-            style={[styles.dateItem, selectedDate === date && styles.selectedDateItem]}
+            className={`px-4 py-2 mr-3 rounded-full ${selectedDate === date ? 'bg-orange-500' : 'bg-gray-100'}`}
             onPress={() => setSelectedDate(date)}
           >
-            <Text style={[styles.dateText, selectedDate === date && styles.selectedDateText]}>
+            <Text className={`text-sm ${selectedDate === date ? 'text-white font-bold' : 'text-gray-600'}`}>
               {date === '全部' ? '全部' : date.replace('-', '/').substring(5)}
             </Text>
           </TouchableOpacity>
@@ -103,147 +100,32 @@ export default function WalletHistory() {
         data={filteredTransactions}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionLeft}>
-              <View style={[styles.transactionIcon, item.type === 'income' ? styles.incomeIcon : styles.expenseIcon]}>
+          <View className="flex-row items-center justify-between bg-white px-4 py-4 border-b border-gray-100">
+            <View className="flex-row items-center">
+              <View className={`w-10 h-10 rounded-full justify-center items-center mr-3 ${item.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`}>
                 <Ionicons 
                   name={item.type === 'income' ? 'arrow-down' : 'arrow-up'} 
                   size={20} 
                   color="#FFFFFF" 
                 />
               </View>
-              <View style={styles.transactionInfo}>
-                <Text style={styles.transactionDescription}>{item.description}</Text>
-                <Text style={styles.transactionTime}>{item.time} {item.date}</Text>
+              <View>
+                <Text className="text-base text-gray-800 mb-1">{item.description}</Text>
+                <Text className="text-sm text-gray-400">{item.time} {item.date}</Text>
               </View>
             </View>
-            <Text style={[styles.transactionAmount, item.type === 'income' ? styles.incomeAmount : styles.expenseAmount]}>
+            <Text className={`text-base font-bold ${item.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
               {item.type === 'income' ? '+' : '-'}{item.amount.toFixed(2)}
             </Text>
           </View>
         )}
         ListEmptyComponent={
-          <View style={styles.emptyState}>
+          <View className="flex-1 justify-center items-center py-20">
             <Ionicons name="document-text-outline" size={64} color="#CCCCCC" />
-            <Text style={styles.emptyText}>暂无交易记录</Text>
+            <Text className="text-base text-gray-400 mt-4">暂无交易记录</Text>
           </View>
         }
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  placeholder: {
-    width: 40,
-  },
-  dateFilter: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  dateItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 12,
-    borderRadius: 20,
-    backgroundColor: '#F0F0F0',
-  },
-  selectedDateItem: {
-    backgroundColor: '#FF6B00',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  selectedDateText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  transactionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  incomeIcon: {
-    backgroundColor: '#4CAF50',
-  },
-  expenseIcon: {
-    backgroundColor: '#F44336',
-  },
-  transactionInfo: {
-    flex: 1,
-  },
-  transactionDescription: {
-    fontSize: 16,
-    color: '#333333',
-    marginBottom: 4,
-  },
-  transactionTime: {
-    fontSize: 14,
-    color: '#999999',
-  },
-  transactionAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  incomeAmount: {
-    color: '#4CAF50',
-  },
-  expenseAmount: {
-    color: '#F44336',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 80,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999999',
-    marginTop: 16,
-  },
-});

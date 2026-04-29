@@ -1,11 +1,9 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Wallet() {
   const router = useRouter();
-  // 模拟钱包数据
   const walletData = {
     balance: 10384.80,
     todayIncome: 328.85,
@@ -21,46 +19,44 @@ export default function Wallet() {
   ];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <SafeAreaView style={styles.header} edges={['top']}>
-        <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+      <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-200">
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333333" />
         </TouchableOpacity>
-        <Text style={styles.title}>我的钱包</Text>
-        <View style={styles.placeholder} />
-        </View>
-      </SafeAreaView>
+        <Text className="text-lg font-bold text-gray-800">我的钱包</Text>
+        <View className="w-10" />
+      </View>
 
       {/* 余额卡片 */}
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>可用余额</Text>
-        <Text style={styles.balanceAmount}>¥{walletData.balance.toFixed(2)}</Text>
-        <View style={styles.incomeInfo}>
-          <View style={styles.incomeItem}>
-            <Text style={styles.incomeLabel}>今日收入</Text>
-            <Text style={styles.incomeAmount}>¥{walletData.todayIncome.toFixed(2)}</Text>
+      <View className="bg-orange-500 mx-4 mt-4 rounded-xl p-5 shadow-lg">
+        <Text className="text-white text-sm opacity-80 mb-2">可用余额</Text>
+        <Text className="text-white text-3xl font-bold mb-5">¥{walletData.balance.toFixed(2)}</Text>
+        <View className="flex-row justify-between">
+          <View className="flex-1 items-center">
+            <Text className="text-white text-xs opacity-80 mb-1">今日收入</Text>
+            <Text className="text-white text-base font-bold">¥{walletData.todayIncome.toFixed(2)}</Text>
           </View>
-          <View style={styles.incomeDivider} />
-          <View style={styles.incomeItem}>
-            <Text style={styles.incomeLabel}>本周收入</Text>
-            <Text style={styles.incomeAmount}>¥{walletData.thisWeekIncome.toFixed(2)}</Text>
+          <View className="w-px h-10 bg-white/30" />
+          <View className="flex-1 items-center">
+            <Text className="text-white text-xs opacity-80 mb-1">本周收入</Text>
+            <Text className="text-white text-base font-bold">¥{walletData.thisWeekIncome.toFixed(2)}</Text>
           </View>
-          <View style={styles.incomeDivider} />
-          <View style={styles.incomeItem}>
-            <Text style={styles.incomeLabel}>本月收入</Text>
-            <Text style={styles.incomeAmount}>¥{walletData.thisMonthIncome.toFixed(2)}</Text>
+          <View className="w-px h-10 bg-white/30" />
+          <View className="flex-1 items-center">
+            <Text className="text-white text-xs opacity-80 mb-1">本月收入</Text>
+            <Text className="text-white text-base font-bold">¥{walletData.thisMonthIncome.toFixed(2)}</Text>
           </View>
         </View>
       </View>
 
       {/* 功能菜单 */}
-      <View style={styles.menuContainer}>
+      <View className="bg-white mx-4 mt-4 rounded-lg overflow-hidden">
         {menuItems.map((item) => (
-          <TouchableOpacity key={item.id} style={styles.menuItem} onPress={item.onPress}>
-            <View style={styles.menuLeft}>
+          <TouchableOpacity key={item.id} className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100" onPress={item.onPress}>
+            <View className="flex-row items-center">
               <Ionicons name={item.icon as any} size={24} color="#666666" />
-              <Text style={styles.menuText}>{item.name}</Text>
+              <Text className="text-base text-gray-800 ml-3">{item.name}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#999999" />
           </TouchableOpacity>
@@ -69,105 +65,3 @@ export default function Wallet() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  placeholder: {
-    width: 40,
-  },
-  balanceCard: {
-    backgroundColor: '#FF6B00',
-    margin: 16,
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  balanceLabel: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.8,
-    marginBottom: 8,
-  },
-  balanceAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 20,
-  },
-  incomeInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  incomeItem: {
-    flex: 1,
-  },
-  incomeLabel: {
-    fontSize: 12,
-    color: '#FFFFFF',
-    opacity: 0.8,
-    marginBottom: 4,
-  },
-  incomeAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  incomeDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  menuContainer: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuText: {
-    fontSize: 16,
-    color: '#333333',
-    marginLeft: 12,
-  },
-});
