@@ -1,22 +1,50 @@
-import { useRouter } from 'expo-router';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+type MessageCategory = 'all' | 'order' | 'system' | 'activity';
 
 export default function Messages() {
   const router = useRouter();
   const { messages, markMessageAsRead, deleteMessage } = useAppStore();
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<MessageCategory>('all');
+
+  const categories: { key: MessageCategory; label: string; icon: string }[] = [
+    { key: 'all', label: '全部', icon: 'list' },
+    { key: 'order', label: '订单', icon: 'car' },
+    { key: 'system', label: '系统', icon: 'settings' },
+    { key: 'activity', label: '活动', icon: 'gift' },
+  ];
+
+  const filteredMessages = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return messages;
+    }
+    return messages.filter(msg => {
+      switch (selectedCategory) {
+        case 'order':
+          return msg.type === 'order' || msg.type === 'dispatch';
+        case 'system':
+          return msg.type === 'system';
+        case 'activity':
+          return msg.type === 'activity' || msg.type === 'promotion';
+        default:
+          return true;
+      }
+    });
+  }, [messages, selectedCategory]);
 
   const handleMessagePress = (messageId: string) => {
     if (isSelectMode) {
       // 选择模式：切换选择状态
-      setSelectedMessages(prev => 
-        prev.includes(messageId) 
-          ? prev.filter(id => id !== messageId) 
+      setSelectedMessages(prev =>
+        prev.includes(messageId)
+          ? prev.filter(id => id !== messageId)
           : [...prev, messageId]
       );
     } else {
@@ -98,27 +126,55 @@ export default function Messages() {
       {/* 头部 */}
       <SafeAreaView style={styles.header} edges={['top']}>
         <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>
-          {isSelectMode ? `已选择 ${selectedMessages.length} 条` : '消息中心'}
-        </Text>
-        {isSelectMode ? (
-          <TouchableOpacity onPress={handleDeleteSelected} style={styles.deleteButton}>
-            <Text style={styles.deleteButtonText}>删除</Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333333" />
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.moreButton}>
-            <Text style={styles.moreButtonText}>全部已读</Text>
-          </TouchableOpacity>
-        )}
+          <Text style={styles.title}>
+            {isSelectMode ? `已选择 ${selectedMessages.length} 条` : '消息中心'}
+          </Text>
+          {isSelectMode ? (
+            <TouchableOpacity onPress={handleDeleteSelected} style={styles.deleteButton}>
+              <Text style={styles.deleteButtonText}>删除</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.moreButton}>
+              <Text style={styles.moreButtonText}>全部已读</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </SafeAreaView>
 
+      {/* 分类标签栏 */}
+      <View style={styles.categoryBar}>
+        {categories.map((category) => (
+          <TouchableOpacity
+            key={category.key}
+            style={[
+              styles.categoryItem,
+              selectedCategory === category.key && styles.categoryItemActive
+            ]}
+            onPress={() => setSelectedCategory(category.key)}
+          >
+            <Ionicons
+              name={category.icon as any}
+              size={18}
+              color={selectedCategory === category.key ? '#FF6B00' : '#666666'}
+            />
+            <Text
+              style={[
+                styles.categoryText,
+                selectedCategory === category.key && styles.categoryTextActive
+              ]}
+            >
+              {category.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {/* 消息列表 */}
       <FlatList
-        data={messages}
+        data={filteredMessages}
         renderItem={renderMessage}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.messagesList}
@@ -236,5 +292,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999999',
     marginTop: 16,
+  },
+  categoryBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  categoryItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  categoryItemActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#FF6B00',
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 4,
+  },
+  categoryTextActive: {
+    color: '#FF6B00',
+    fontWeight: 'bold',
   },
 });

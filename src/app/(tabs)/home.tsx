@@ -11,10 +11,10 @@ export default function Home() {
 
   // 顶部功能入口
   const topFeatures = [
-    { id: '1', name: '接单', icon: 'car', onPress: () => router.push('/order') },
-    { id: '2', name: '投标', icon: 'gift', onPress: () => console.log('投标') },
-    { id: '3', name: '奖励', icon: 'trophy', onPress: () => console.log('奖励') },
-    { id: '4', name: '接单码', icon: 'qr-code', onPress: () => console.log('接单码') }
+    { id: '1', name: '接单', icon: 'car', onPress: () => router.push('/order' as any) },
+    { id: '2', name: '投标', icon: 'gift', onPress: () => router.push('/bidding' as any) },
+    { id: '3', name: '奖励', icon: 'trophy', onPress: () => router.push('/rewards' as any) },
+    { id: '4', name: '接单码', icon: 'qr-code', onPress: () => router.push('/ordercode' as any) }
   ];
 
   return (
@@ -45,8 +45,8 @@ export default function Home() {
 
       {/* 促销横幅 */}
       <View style={styles.promoBanner}>
-        <Image 
-          source={{ uri: 'https://picsum.photos/400/150' }} 
+        <Image
+          source={{ uri: 'https://picsum.photos/400/150' }}
           style={styles.bannerImage}
           resizeMode="cover"
         />
@@ -61,8 +61,8 @@ export default function Home() {
 
       {/* 会员焕新计划 */}
       <View style={styles.memberCard}>
-        <Image 
-          source={{ uri: 'https://picsum.photos/400/150' }} 
+        <Image
+          source={{ uri: 'https://picsum.photos/400/150' }}
           style={styles.memberImage}
           resizeMode="cover"
         />

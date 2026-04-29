@@ -23,6 +23,9 @@
     "expo-image": "~55.0.9",
     "expo-image-picker": "~55.0.19",
     "expo-linking": "~55.0.14",
+    "expo-location": "^55.1.8",
+    "expo-modules-core": "^55.0.23",
+    "expo-notifications": "~55.0.21",
     "expo-router": "~55.0.13",
     "expo-splash-screen": "~55.0.19",
     "expo-status-bar": "~55.0.5",
@@ -44,6 +47,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "expo-module-scripts": "^55.0.2",
     "typescript": "~5.9.2"
   },
   "private": true

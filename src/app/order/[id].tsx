@@ -41,7 +41,7 @@ export default function OrderDetail() {
 
         // 请求位置权限
         const permissionStatus = await ExpoGaodeMapModule.requestLocationPermission();
-        if (permissionStatus !== PermissionStatus.GRANTED) {
+        if (permissionStatus.status !== PermissionStatus.GRANTED) {
           return;
         }
 
@@ -104,12 +104,7 @@ export default function OrderDetail() {
   };
 
   const handleComplaint = () => {
-    Alert.alert('投诉', '请选择投诉类型', [
-      { text: '服务态度', onPress: () => Alert.alert('成功', '投诉已提交') },
-      { text: '货物损坏', onPress: () => Alert.alert('成功', '投诉已提交') },
-      { text: '其他问题', onPress: () => Alert.alert('成功', '投诉已提交') },
-      { text: '取消', style: 'cancel' },
-    ]);
+    router.push(`/order/complaint?id=${id}`);
   };
 
   if (!order) {

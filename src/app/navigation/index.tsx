@@ -1,15 +1,12 @@
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { ExpoGaodeMapModule, MapView, Marker, Polyline } from 'expo-gaode-map';
+import { PermissionStatus } from 'expo-modules-core';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width, height } = Dimensions.get('window');
-const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.01;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default function Navigation() {
   const router = useRouter();
@@ -35,7 +32,7 @@ export default function Navigation() {
 
         // 请求位置权限
         const permissionStatus = await ExpoGaodeMapModule.requestLocationPermission();
-        if (permissionStatus !== 'granted') {
+        if (permissionStatus.status !== PermissionStatus.GRANTED) {
           setErrorMsg('位置权限被拒绝');
           return;
         }
@@ -67,7 +64,7 @@ export default function Navigation() {
 
       // 开始实时定位
       ExpoGaodeMapModule.start();
-      
+
       const subscription = ExpoGaodeMapModule.addLocationListener((location) => {
         const newLocation = {
           latitude: location.latitude,
@@ -111,13 +108,13 @@ export default function Navigation() {
       {/* 头部 */}
       <SafeAreaView style={styles.header} edges={['top']}>
         <View style={styles.headerContent}>
-        <TouchableOpacity onPress={handleNavigateBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>导航</Text>
-        <TouchableOpacity style={styles.moreButton}>
-          <Ionicons name="ellipsis-vertical" size={24} color="#333333" />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleNavigateBack} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>导航</Text>
+          <TouchableOpacity style={styles.moreButton}>
+            <Ionicons name="ellipsis-vertical" size={24} color="#333333" />
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
 

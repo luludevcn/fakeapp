@@ -1,4 +1,5 @@
 import { useAppStore } from "@/store/useAppStore";
+import { initPushNotification } from "@/utils/notification";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ExpoGaodeMapModule from "expo-gaode-map";
 import { Stack, router } from "expo-router";
@@ -29,6 +30,9 @@ export default function RootLayout() {
             });
           }
 
+          // 初始化推送通知
+          await initPushNotification();
+
           // 如果未登录，导航到登录页面
           if (!user) {
             router.replace('/auth/login');
@@ -48,24 +52,30 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style={"dark"} />
       <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="auth/privacy" options={{ headerShown: false }} />
-      <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-      <Stack.Screen name="auth/verify" options={{ headerShown: false }} />
-      <Stack.Screen name="vehicle/index" options={{ headerShown: false }} />
-      <Stack.Screen name="vehicle/add" options={{ headerShown: false }} />
-      <Stack.Screen name="wallet/index" options={{ headerShown: false }} />
-      <Stack.Screen name="wallet/history" options={{ headerShown: false }} />
-      <Stack.Screen name="wallet/withdraw" options={{ headerShown: false }} />
-      <Stack.Screen name="wallet/report" options={{ headerShown: false }} />
-      <Stack.Screen name="order/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="order/rate" options={{ headerShown: false }} />
-      <Stack.Screen name="navigation/index" options={{ headerShown: false }} />
-      <Stack.Screen name="customer-service/index" options={{ headerShown: false }} />
-      <Stack.Screen name="messages/index" options={{ headerShown: false }} />
-      <Stack.Screen name="settings/index" options={{ headerShown: false }} />
-      <Stack.Screen name="settings/faq" options={{ headerShown: false }} />
-    </Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/privacy" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/verify" options={{ headerShown: false }} />
+        <Stack.Screen name="vehicle/index" options={{ headerShown: false }} />
+        <Stack.Screen name="vehicle/add" options={{ headerShown: false }} />
+        <Stack.Screen name="wallet/index" options={{ headerShown: false }} />
+        <Stack.Screen name="wallet/history" options={{ headerShown: false }} />
+        <Stack.Screen name="wallet/withdraw" options={{ headerShown: false }} />
+        <Stack.Screen name="wallet/report" options={{ headerShown: false }} />
+        <Stack.Screen name="order/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="order/rate" options={{ headerShown: false }} />
+        <Stack.Screen name="order/complaint" options={{ headerShown: false }} />
+        <Stack.Screen name="navigation/index" options={{ headerShown: false }} />
+        <Stack.Screen name="customer-service/index" options={{ headerShown: false }} />
+        <Stack.Screen name="messages/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/faq" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/payment" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/privacy" options={{ headerShown: false }} />
+        <Stack.Screen name="bidding/index" options={{ headerShown: false }} />
+        <Stack.Screen name="rewards/index" options={{ headerShown: false }} />
+        <Stack.Screen name="ordercode/index" options={{ headerShown: false }} />
+      </Stack>
     </SafeAreaProvider>
   </>
   )

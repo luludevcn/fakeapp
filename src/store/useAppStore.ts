@@ -29,7 +29,7 @@ interface AppState {
   // 用户状态
   user: User | null;
   setUser: (user: User) => void;
-  
+
   // 订单状态
   orders: Order[];
   pendingOrders: Order[];
@@ -42,14 +42,14 @@ interface AppState {
   rateOrder: (orderId: string, rating: number, comment: string) => void;
   getPendingOrders: () => void;
   getMyOrders: () => void;
-  
+
   // 服务状态
   services: {
     id: string;
     name: string;
     icon: string;
   }[];
-  
+
   // 导航状态
   navigation: {
     currentLocation: { latitude: number; longitude: number };
@@ -57,11 +57,11 @@ interface AppState {
   };
   setCurrentLocation: (location: { latitude: number; longitude: number }) => void;
   setDestination: (destination: { latitude: number; longitude: number } | null) => void;
-  
+
   // 标签页状态
   currentTab: string;
   setCurrentTab: (tab: string) => void;
-  
+
   // 消息状态
   messages: {
     id: string;
@@ -69,6 +69,7 @@ interface AppState {
     content: string;
     time: string;
     read: boolean;
+    type: 'order' | 'system' | 'activity' | 'promotion' | 'dispatch';
   }[];
   markMessageAsRead: (messageId: string) => void;
   deleteMessage: (messageId: string) => void;
@@ -78,7 +79,7 @@ export const useAppStore = create<AppState>((set) => ({
   // 用户状态
   user: null,
   setUser: (user) => set({ user }),
-  
+
   // 订单状态
   orders: [
     {
@@ -196,31 +197,31 @@ export const useAppStore = create<AppState>((set) => ({
   addOrder: (order) => set((state) => ({ orders: [...state.orders, order] })),
   setOrders: (orders) => set({ orders }),
   acceptOrder: (orderId) => set((state) => ({
-    orders: state.orders.map(order => 
+    orders: state.orders.map(order =>
       order.id === orderId ? { ...order, status: '已接单' } : order
     ),
     pendingOrders: state.pendingOrders.filter(order => order.id !== orderId),
     myOrders: [...state.myOrders, state.orders.find(order => order.id === orderId) as Order]
   })),
   updateOrderStatus: (orderId, status) => set((state) => ({
-    orders: state.orders.map(order => 
+    orders: state.orders.map(order =>
       order.id === orderId ? { ...order, status } : order
     ),
-    myOrders: state.myOrders.map(order => 
+    myOrders: state.myOrders.map(order =>
       order.id === orderId ? { ...order, status } : order
     )
   })),
   cancelOrder: (orderId) => set((state) => ({
-    orders: state.orders.map(order => 
+    orders: state.orders.map(order =>
       order.id === orderId ? { ...order, status: '已取消' } : order
     ),
     myOrders: state.myOrders.filter(order => order.id !== orderId)
   })),
   rateOrder: (orderId, rating, comment) => set((state) => ({
-    orders: state.orders.map(order => 
+    orders: state.orders.map(order =>
       order.id === orderId ? { ...order, rating, comment } : order
     ),
-    myOrders: state.myOrders.map(order => 
+    myOrders: state.myOrders.map(order =>
       order.id === orderId ? { ...order, rating, comment } : order
     )
   })),
@@ -228,11 +229,11 @@ export const useAppStore = create<AppState>((set) => ({
     pendingOrders: state.orders.filter(order => order.status === '待接单')
   })),
   getMyOrders: () => set((state) => ({
-    myOrders: state.orders.filter(order => 
+    myOrders: state.orders.filter(order =>
       order.status === '已接单' || order.status === '配送中' || order.status === '已完成'
     )
   })),
-  
+
   // 服务状态
   services: [
     { id: '1', name: '加入派单', icon: '📦' },
@@ -247,7 +248,7 @@ export const useAppStore = create<AppState>((set) => ({
     { id: '10', name: '赤兔养车', icon: '🚙' },
     { id: '11', name: '全部服务', icon: '📱' }
   ],
-  
+
   // 导航状态
   navigation: {
     currentLocation: { latitude: 39.9042, longitude: 116.4074 },
@@ -265,11 +266,11 @@ export const useAppStore = create<AppState>((set) => ({
       destination
     }
   })),
-  
+
   // 标签页状态
   currentTab: 'home',
   setCurrentTab: (tab) => set({ currentTab: tab }),
-  
+
   // 消息状态
   messages: [
     {
@@ -278,6 +279,7 @@ export const useAppStore = create<AppState>((set) => ({
       content: '您有一个新的订单，请及时查看',
       time: '10:30',
       read: false,
+      type: 'order',
     },
     {
       id: '2',
@@ -285,6 +287,7 @@ export const useAppStore = create<AppState>((set) => ({
       content: '平台将于今晚进行系统维护，请提前做好准备',
       time: '09:15',
       read: false,
+      type: 'system',
     },
     {
       id: '3',
@@ -292,10 +295,11 @@ export const useAppStore = create<AppState>((set) => ({
       content: '新用户专享优惠，首单立减20元',
       time: '昨天',
       read: true,
+      type: 'activity',
     },
   ],
   markMessageAsRead: (messageId) => set((state) => ({
-    messages: state.messages.map(message => 
+    messages: state.messages.map(message =>
       message.id === messageId ? { ...message, read: true } : message
     )
   })),

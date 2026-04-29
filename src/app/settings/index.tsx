@@ -22,8 +22,8 @@ export default function Settings() {
           text: '确定',
           style: 'destructive',
           onPress: () => {
-            setUser(null);
-            router.replace('/auth/login');
+            setUser(null as any);
+            router.replace('/auth/login' as any);
           },
         },
       ],
@@ -48,11 +48,11 @@ export default function Settings() {
       {/* 头部 */}
       <SafeAreaView style={styles.header} edges={['top']}>
         <View style={styles.headerContent}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>设置</Text>
-        <View style={styles.placeholder} />
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>设置</Text>
+          <View style={styles.placeholder} />
         </View>
       </SafeAreaView>
 
@@ -81,6 +81,18 @@ export default function Settings() {
             thumbColor="#FFFFFF"
           />
         </View>
+        <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/privacy' as any)}>
+          <Text style={styles.settingText}>隐私设置详情</Text>
+          <Ionicons name="chevron-forward" size={20} color="#999999" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>支付设置</Text>
+        <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/payment' as any)}>
+          <Text style={styles.settingText}>默认支付方式</Text>
+          <Ionicons name="chevron-forward" size={20} color="#999999" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
@@ -138,6 +150,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
   },
   backButton: {
     padding: 8,
